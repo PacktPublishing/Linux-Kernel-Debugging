@@ -46,7 +46,7 @@ static int __init printk_loglevels_init(void)
 
 static void __exit printk_loglevels_exit(void)
 {
-	pr_info("Goodbye, debug world @ log-level KERN_INFO    [%d]\n", LOGLEVEL_DEBUG);
+	pr_info("Goodbye, debug world @ log-level KERN_INFO    [%d]\n", LOGLEVEL_INFO);
 }
 
 module_init(printk_loglevels_init);
