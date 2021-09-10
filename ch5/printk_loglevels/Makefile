@@ -33,10 +33,10 @@ ifeq ($(ARCH),arm)
 else ifeq ($(ARCH),arm64)
   # *UPDATE* 'KDIR' below to point to the ARM64 (Aarch64) Linux kernel source
   # tree on your box
-  KDIR ?= ~/kernel/linux-4.14
+  KDIR ?= ~/kernel/linux-5.4
 else ifeq ($(ARCH),powerpc)
   # *UPDATE* 'KDIR' below to point to the PPC64 Linux kernel source tree on your box
-  KDIR ?= ~/kernel/linux-4.9.1
+  KDIR ?= ~/kernel/linux-5.0
 else
   # 'KDIR' is the Linux 'kernel headers' package on your host system; this is
   # usually an x86_64, but could be anything, really (f.e. building directly
@@ -49,13 +49,27 @@ FNAME_C := printk_loglevels
 
 PWD            := $(shell pwd)
 obj-m          += ${FNAME_C}.o
-EXTRA_CFLAGS   += -DDEBUG
+
+# Debug or production mode? Set the following variable accordingly to y/n resp.
+# (Actually, debug info is always going to be generated when you build the
+# module on a debug kernel, where CONFIG_DEBUG_INFO is defined. This helps us
+# influence the build on a production kernel, forcing generation of debug
+# symbols, if so required).
+DEBUG := n
+ifeq (${DEBUG}, y)
+  EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Wall -fno-omit-frame-pointer
+else
+  EXTRA_CFLAGS   += -UDEBUG
+endif
+
+STRIP := ${CROSS_COMPILE}strip
 
 all:
 	@echo
 	@echo '--- Building : KDIR=${KDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} EXTRA_CFLAGS=${EXTRA_CFLAGS} ---'
 	@echo
 	make -C $(KDIR) M=$(PWD) modules
+	$(shell [ "${DEBUG}" != "y" ] && ${STRIP} --strip-unneeded ${FNAME_C}.ko)
 install:
 	@echo
 	@echo "--- installing ---"
