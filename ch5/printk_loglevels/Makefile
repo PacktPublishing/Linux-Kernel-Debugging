@@ -50,18 +50,24 @@ FNAME_C := printk_loglevels
 PWD            := $(shell pwd)
 obj-m          += ${FNAME_C}.o
 
-# Debug or production mode? Set the following variable accordingly to y/n resp.
+#--- Debug or production mode?
+# Set the MYDEBUG variable accordingly to y/n resp.
 # (Actually, debug info is always going to be generated when you build the
-# module on a debug kernel, where CONFIG_DEBUG_INFO is defined. This helps us
-# influence the build on a production kernel, forcing generation of debug
-# symbols, if so required).
-DEBUG := n
-ifeq (${DEBUG}, y)
+# module on a debug kernel, where CONFIG_DEBUG_INFO is defined, making this
+# setting of the EXTRA_CFLAGS variable mostly redundant (besides the -DDEBUG).
+# This simply helps us influence the build on a production kernel, forcing
+# generation of debug symbols, if so required. Also, realize that the DEBUG
+# macro is turned on by many CONFIG_*DEBUG* options; hence, we use a different
+# macro var name, MYDEBUG).
+MYDEBUG := n
+ifeq (${MYDEBUG}, y)
   EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Wall -fno-omit-frame-pointer
 else
+#  INSTALL_MOD_STRIP=1
   EXTRA_CFLAGS   += -UDEBUG
 endif
 
+KMODDIR ?= /lib/modules/$(shell uname -r)
 STRIP := ${CROSS_COMPILE}strip
 
 all:
@@ -69,7 +75,7 @@ all:
 	@echo '--- Building : KDIR=${KDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} EXTRA_CFLAGS=${EXTRA_CFLAGS} ---'
 	@echo
 	make -C $(KDIR) M=$(PWD) modules
-	$(shell [ "${DEBUG}" != "y" ] && ${STRIP} --strip-unneeded ${FNAME_C}.ko)
+	$(shell [ "${MYDEBUG}" != "y" ] && ${STRIP} --strip-debug ./${FNAME_C}.ko)
 install:
 	@echo
 	@echo "--- installing ---"
@@ -78,13 +84,15 @@ install:
 	@echo
 	@echo " [Now for the 'sudo make install' ]"
 	sudo make -C $(KDIR) M=$(PWD) modules_install
-	sudo depmod
+# TODO/FIXME: stripped ver doesn't make it to the KMODDIR folder ??
+	$(shell [ "${MYDEBUG}" != "y" ] && sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko)
 clean:
 	@echo
 	@echo "--- cleaning ---"
 	@echo
 	make -C $(KDIR) M=$(PWD) clean
-	rm -f *~   # from 'indent'
+# from 'indent'
+	rm -f *~
 
 #--------------- More (useful) targets! -------------------------------
 INDENT := indent
