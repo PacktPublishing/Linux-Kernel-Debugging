@@ -278,7 +278,7 @@ void delay_sec(long val)
 #include <linux/ktime.h>
 #define SHOW_DELTA(later, earlier)  do {    \
     if (time_after((unsigned long)later, (unsigned long)earlier)) { \
-        pr_info("delta: %lld ns (= %lld us = %lld ms)\n",   \
+        pr_info("delta: %lld ns (~ %lld us ~ %lld ms)\n",   \
             ktime_sub(later, earlier), \
             ktime_sub(later, earlier)/1000, \
             ktime_sub(later, earlier)/1000000 \
