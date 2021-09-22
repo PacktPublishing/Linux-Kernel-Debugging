@@ -12,23 +12,19 @@
  * The function must not be marked 'static' or 'inline' in the kernel / LKM.
  *
  * Kaiwan N Billimoria
- * <kaiwan -at- kaiwantech -dot- com>
  * License: MIT
  */
-#define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
-#include "convenient.h"
+#include "../../../../convenient.h"
 
 #define MODULE_VER 		"0.1"
-//#define MODULE_NAME    	"helper_kp"
 
-static char * funcname;
+static char *funcname;
 /* module_param (var, type, sysfs_entry_permissions); 
  *  0 in last => no sysfs entry 
  */
@@ -36,7 +32,7 @@ module_param(funcname, charp, 0);
 MODULE_PARM_DESC(funcname,
 "Function name of the target (LKM's) function to attach probe to.");
 
-static int verbose=0;
+static int verbose;
 module_param(verbose, int, 0644);
 MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
 
@@ -46,7 +42,7 @@ static int running_avg=0;
 static spinlock_t lock;
 
 /*
- * This probe runs just prior to "funcptr()" .
+ * This probe runs just prior to the function "funcname()" is invoked.
  */
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -55,14 +51,16 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	spin_unlock(&lock);
 
 	if (verbose) {
-		pr_debug( "Pre '%s'.\n", funcname);
+		pr_debug_ratelimited("%s:%s():Pre '%s'.\n", KBUILD_MODNAME, __func__, funcname);
 		PRINT_CTX();
 		//dump_stack();
 	}
 	return 0;
 }
 
-#define QUITE_LARGE_LATENCY_US	100  // time taken between the pre and post handler funcs
+/*
+ * This probe runs immediately after the function "funcname()" completes.
+ */
 static void handler_post(struct kprobe *p, struct pt_regs *regs,
 		unsigned long flags)
 {
@@ -70,21 +68,10 @@ static void handler_post(struct kprobe *p, struct pt_regs *regs,
 	tm_end = ktime_get_real_ns();
 
 	if (verbose) {
-		pr_debug( "%s:%d. Post '%s'.\n",
-			current->comm, current->pid, funcname);
+		pr_debug_ratelimited("%s:%s():%s:%d. Post '%s'.\n",
+			KBUILD_MODNAME, __func__, current->comm, current->pid, funcname);
 	}
 
-/*
-	timeval_subtract(&tv_diff, &tv_post, &tv_pre);
-	running_avg = (running_avg + tv_diff.tv_usec)/2;
-	if (unlikely(tv_diff.tv_sec > 0)) {
-		MSG_SHORT( " delta: %ld s.", tv_diff.tv_sec);
-	} else {
-		MSG_SHORT( " delta: %2ld us, avg:%2d\n", tv_diff.tv_usec, running_avg);
-	}
-	if (unlikely(tv_diff.tv_usec > QUITE_LARGE_LATENCY_US))
-		MSG_SHORT(" !!! %s:%d\n", current->comm, current->pid);
-*/
 	SHOW_DELTA(tm_end, tm_start);
 	spin_unlock(&lock);
 }
@@ -92,33 +79,35 @@ static void handler_post(struct kprobe *p, struct pt_regs *regs,
 static int __init helper_kp_init_module(void)
 {
 	if (!funcname) {
-		pr_info("Must pass funcname as a module parameter\n");
+		pr_info("%s:%s():Must pass funcname as a module parameter\n", KBUILD_MODNAME, __func__);
 		return -EINVAL;
 	}
 	spin_lock_init(&lock);
-	pr_info("trapping function %s, verbose mode %s\n", funcname, (verbose==1?"Y":"N"));
+	pr_info("%s:%s():kprobe'ing function %s, verbose mode %s\n",
+		KBUILD_MODNAME, __func__, funcname, (verbose==1?"Y":"N"));
 
 	/********* Possible SECURITY concern:
  	 * We just assume the pointer passed is valid and okay.
+	 * Our kp_load.sh script has performed basic verification...
  	 */
 	/* Register the kprobe handler */
 	kpb.pre_handler = handler_pre;
 	kpb.post_handler = handler_post;
 	kpb.symbol_name = funcname;
 	if (register_kprobe(&kpb)) {
-		pr_alert("register_kprobe failed!\n"
+		pr_alert("%s:%s():register_kprobe failed!\n"
 		"Check: is function '%s' invalid, static, inline or attribute-marked '__kprobes' ?\n", 
-			funcname);
+			KBUILD_MODNAME, __func__, funcname);
 		return -EINVAL;
 	}
-	pr_info("registered kprobe for function %s\n",  funcname);
+	pr_info("%s:%s():registered kprobe for function %s\n", KBUILD_MODNAME, __func__, funcname);
 	return 0;	/* success */
 }
 
 static void helper_kp_cleanup_module(void)
 {
 	unregister_kprobe(&kpb);
-	pr_info("Unregistered kprobe @ function %s\n", funcname);
+	pr_info("%s:%s():unregistered kprobe @ function %s\n", KBUILD_MODNAME, __func__, funcname);
 }
 
 module_init(helper_kp_init_module);
