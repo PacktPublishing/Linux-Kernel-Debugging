@@ -64,8 +64,12 @@ ifeq (${MYDEBUG}, y)
   EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Wall -fno-omit-frame-pointer
 else
 #  INSTALL_MOD_STRIP=1
-  EXTRA_CFLAGS   += -UDEBUG
+#  EXTRA_CFLAGS   += -UDEBUG
 endif
+# We always keep the dynamic debug facility enabled; this allows us to turn
+# dynamically turn on/off debug printk's later... To disable it simply comment
+# out the following line
+EXTRA_CFLAGS   += -DDYNAMIC_DEBUG_MODULE
 
 KMODDIR ?= /lib/modules/$(shell uname -r)
 STRIP := ${CROSS_COMPILE}strip
