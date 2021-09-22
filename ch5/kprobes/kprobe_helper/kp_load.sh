@@ -25,7 +25,7 @@ source ./common.sh || {
 # Function to validate passed as first parameter
 check_function()
 {
-FUNC=$1
+local FUNC=$1
 if [ -z "${FUNC}" ]; then
 	echo
 	echo "*** ${name}: function name null, aborting now.."
@@ -56,10 +56,22 @@ elif [ -f /boot/System.map-$(uname -r) ]; then
   SYMLOC=/boot/System.map-$(uname -r)
 fi
 
+# Is the to-be-kprobe'd function blacklisted?
+if [ ! -z "${DBGFS_MNT}" ]; then
+ if [ -d ${DBGFS_MNT} ]; then
+   grep -q -w "${FUNC}" ${DBGFS_MNT}/kprobes/blacklist && {
+   echo "
+*** ${name}: FATAL: the symbol '${FUNC}' is blacklisted by the Kprobes
+framework. Aborting..."
+   exit 1
+  }
+ fi
+fi
+
 grep -w "[tT] ${FUNC}" ${SYMLOC} || {
- echo
- echo "*** $name: FATAL: Symbol '${FUNC}' not found!
- [Either it's invalid -or- Could it be static or inline?]. Aborting..."
+ echo "
+*** ${name}: FATAL: Symbol '${FUNC}' not found!
+[Either it's invalid -or- Could it be static or inline?]. Aborting..."
  exit 1
  }
 num=$(grep -w "[tT] ${FUNC}" ${SYMLOC} |wc -l)
@@ -67,7 +79,6 @@ num=$(grep -w "[tT] ${FUNC}" ${SYMLOC} |wc -l)
  echo "
  ### $name: WARNING! Symbol '${FUNC}' - multiple instances found!
 "
- #exit 1
  }
 }
 
@@ -158,13 +169,16 @@ echo " OK
 #  to kprobe.
 PROBE_KERNEL=1
 
-#TARGET_MODULE=""
 SEP="-------------------------------------------------------------------------------"
 name=$(basename $0)
 
 if [ $(id -u) -ne 0 ]; then
 	echo "${name}: requires root."
 	exit 1
+fi
+mount|grep -q -w debugfs
+if [ $? -eq 0 ]; then
+  DBGFS_MNT=$(mount|grep -w debugfs|awk '{print $3}')
 fi
 kprobes_check
 
@@ -215,7 +229,7 @@ fi
 
 ################ Generate a kernel module to probe this particular function ###############
 BASEFILE_C=helper_kp.c
-BASEFILE_H=convenient.h
+BASEFILE_H=../../../convenient.h
 BASEFILE=helper_kp
 
 if [ ! -f ${BASEFILE_C} ]; then
@@ -245,12 +259,12 @@ cat > Makefile << @MYMARKER@
 ### Specifically: Kprobe helpers !
 
 ifneq (\$(KERNELRELEASE),)
-	$(info Dynamic Makefile:)
-	$(info Building with KERNELRELEASE = ${KERNELRELEASE}) 
-	# If you choose to keep the define USE_FTRACE_PRINT , we'll use
-	# trace_printk() , else the regular printk()
-	EXTRA_CFLAGS += -DDEBUG  # use regular printk()
-	obj-m += ${KPMOD}.o
+  \$(info --- Dynamic Makefile for helper_kprobes util ---)
+  \$(info Building with KERNELRELEASE = ${KERNELRELEASE}) 
+  # If you choose to keep the define USE_FTRACE_PRINT , we'll use
+  # trace_printk() , else the regular printk()
+  EXTRA_CFLAGS += -DDEBUG  # use regular pr_*()
+  obj-m += ${KPMOD}.o
 
 else
 	#########################################
@@ -259,7 +273,7 @@ else
 	# make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabi- 
 	ifeq (\$(ARCH),arm)
 	# Update 'KDIR' below to point to the ARM Linux kernel source tree
-		KDIR ?= ~/3.10.24
+		KDIR ?= ~/5.4
 	else
 		KDIR ?= /lib/modules/\$(shell uname -r)/build 
 	endif
