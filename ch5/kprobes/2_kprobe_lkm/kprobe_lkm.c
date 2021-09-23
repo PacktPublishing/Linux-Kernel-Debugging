@@ -1,5 +1,5 @@
 /*
- * ch5/kprobes/kprobe_lkm/kprobe_lkm.c
+ * ch5/kprobes/2_kprobe_lkm/kprobe_lkm.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -27,7 +27,7 @@
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKD book:ch5/kprobes/kprobe_lkm: simple Kprobes demo module");
+MODULE_DESCRIPTION("LKD book:ch5/kprobes/2_kprobe_lkm: simple Kprobes demo module");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
@@ -47,14 +47,29 @@ MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
 
 /*
  * This probe runs just prior to the function "kprobe_func()" is invoked.
+ * IMP: Here, we're assuming you've setup a kprobe into the do_sys_open().
  */
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
+	char *param_fname_reg;
+
+#ifdef CONFIG_X86
+	param_fname_reg = (char __user *)regs->si;
+#endif
+#ifdef CONFIG_ARM
+	/* ARM-32 ABI:
+	 * First four parameters to a function are in the foll GPRs:
+	 *  r0, r1, r2, r3
+	 * See the kernel's pt_regs structure - rendition of the CPU registers here:
+	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/uapi/asm/ptrace.h#L135
+	 */
+	param_fname_reg = (char __user *)regs->ARM_r1;
+#endif
+
 	PRINT_CTX();
 	/*
-	 * Here, we're assuming you've setup a kprobe into the do_sys_open().
 	 * We want the filename; to get it, we *must* copy it in from it's userspace
-	 * buffer, the pointer to which is in the (R)SI CPU register (on x86).
+	 * buffer, the pointer to which is in an arch-specific register.
 	 * Using strncpy_from_user() here is considered a bug! as we're in an atomic
 	 * context in this kprobe pre-handler...
 	 * [ ... ]
@@ -75,7 +90,8 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	 * Not really much choice here, we use it ...   :-/
 	 */
 #if 1
-	if (!strncpy_from_user(fname, (const char __user *)regs->si, PATH_MAX + 1))
+	if (!strncpy_from_user(fname, param_fname_reg, PATH_MAX + 1))
+	//if (!strncpy_from_user(fname, (const char __user *)regs->si, PATH_MAX + 1))
 #else
 	/* Attempting to use the 'usual' copy_from_user() here simply causes a hard
 	 * hang... avoid it */
@@ -84,13 +100,14 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 #endif
 		return -EFAULT;
 
-	/* For this demo, lets filter on the process context being 'vi' only; else
-	 * we'll get far too much log info to reasonably process...
+	/* For the purpose of this demo, lets filter on the process context being
+	 * 'vi' only; else we'll get far too much log info to reasonably process...
 	 */
 	if (strncmp(current->comm, "vi", 2))
 		return 0;
 
-	pr_info("FILE being opened: ptr [R]SI: %px   name:%s\n", (void *)regs->si, fname);
+	pr_info("FILE being opened: reg:0x%px   fname:%s\n",
+		(void *)param_fname_reg, fname);
 
 	spin_lock(&lock);
 	tm_start = ktime_get_real_ns();
