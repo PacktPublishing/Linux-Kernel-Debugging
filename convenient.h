@@ -132,7 +132,7 @@
 /*------------------------ PRINT_CTX ---------------------------------*/
 /*
  * An interesting way to print the context info; we mimic the kernel
- * Ftrace 'latency-format' :
+ * Ftrace 'latency-format', printing the 'usual' 4 columns of kernel state info:
  *                       _-----=> irqs-off          [d]
  *                      / _----=> need-resched      [N]
  *                     | / _---=> hardirq/softirq   [H|h|s] [1]
@@ -143,11 +143,16 @@
  *
  * [1] 'h' = hard irq is running ; 'H' = hard irq occurred inside a softirq]
  *
- * Sample output (via 'normal' printk method; in this comment, we make / * into \* ...)
+ * Sample output (via a debug printk; in this comment, we make / * into \* ...):
  *  CPU)  task_name:PID  | irqs,need-resched,hard/softirq,preempt-depth  \* func_name() *\
  *  001)  rdwr_drv_secret -4857   |  ...0   \* read_miscdrv_rdwr() *\
  *
  * (of course, above, we don't display the 'Duration' and 'Function Calls' fields)
+ *
+ * @@@ NOTE @@@
+ * As we use pr_debug() to print this info, you will typically need to either:
+ *  a) define the symbol DEBUG in the module/kernel (hard-coded)
+ *  b) use the kernel's dynamic debug framework to see the debug prints (soft-coded, better!)
  */
 #include <linux/sched.h>
 #include <linux/interrupt.h>
@@ -172,7 +177,7 @@
 	"%03d) %c%s%c:%d   |  "                                                      \
 	"%c%c%c%u   "                                                                \
 	"/* %s() */\n"                                                               \
-	, raw_smp_processor_id(),                                                        \
+	, raw_smp_processor_id(),                                                    \
 	(!current->mm?'[':' '), current->comm, (!current->mm?']':' '), current->pid, \
 	(irqs_disabled()?'d':'.'),                                                   \
 	(need_resched()?'N':'.'),                                                    \

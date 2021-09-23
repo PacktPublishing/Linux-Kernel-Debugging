@@ -260,7 +260,7 @@ cat > Makefile << @MYMARKER@
 
 ifneq (\$(KERNELRELEASE),)
   \$(info --- Dynamic Makefile for helper_kprobes util ---)
-  \$(info Building with KERNELRELEASE = ${KERNELRELEASE}) 
+  \$(info Building with KERNELRELEASE = ${KERNELRELEASE})
   # If you choose to keep the define USE_FTRACE_PRINT , we'll use
   # trace_printk() , else the regular printk()
   EXTRA_CFLAGS += -DDEBUG  # use regular pr_*()
