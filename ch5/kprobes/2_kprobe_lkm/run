@@ -1,0 +1,7 @@
+echo "dmesg -C && make && ./test.sh && sleep 1 && rmmod kprobe_lkm && dmesg"
+
+dmesg -C && make && ./test.sh && sleep .1
+vi /0setup*
+rmmod kprobe_lkm && dmesg
+
+#dmesg -C && make && ./test.sh && sleep 1 && rmmod kprobe_lkm && dmesg
