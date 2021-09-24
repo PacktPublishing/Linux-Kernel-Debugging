@@ -2,8 +2,13 @@
 # test.sh
 KMOD=kprobe_lkm
 FUNC_TO_KPROBE=do_sys_open
-DYNDBG_CTRL=/proc/dynamic_debug/control  # safe, always there
 VERBOSE=0
+
+DYNDBG_CTRL=/sys/kernel/debug/dynamic_debug/control
+if [ ! -f ${DYNDBG_CTRL} ]; then
+   [ -f /proc/dynamic_debug/control ] && DYNDBG_CTRL=/proc/dynamic_debug/control \
+	   || DYNDBG_CTRL=""
+fi
 
 echo "Module ${KMOD}: function to probe: ${FUNC_TO_KPROBE}
 "
@@ -13,6 +18,11 @@ if [ ! -f ./${KMOD}.ko ]; then
 fi
 sudo rmmod ${KMOD} 2>/dev/null # rm any stale instance
 sudo insmod ./${KMOD}.ko kprobe_func=${FUNC_TO_KPROBE} verbose=${VERBOSE} || exit 1
+
+[ -z "${DYNDBG_CTRL}" ] && {
+   echo "No dynamic debug control file available..."
+   exit
+}
 
 echo "-- Module ${KMOD} now inserted, turn on dynamic debug prints now --"
 sudo bash -c "grep \"${KMOD} .* =_ \" ${DYNDBG_CTRL}" && echo "Wrt module ${KMOD}, one or more dynamic debug prints are Off" || \
