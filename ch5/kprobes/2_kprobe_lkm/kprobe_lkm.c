@@ -47,7 +47,10 @@ MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
 
 /*
  * This probe runs just prior to the function "kprobe_func()" is invoked.
- * IMP: Here, we're assuming you've setup a kprobe into the do_sys_open().
+ * IMP: Here, we're assuming you've setup a kprobe into the do_sys_open():
+ *  long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
+ *  The second parameter is of interest; we retrieve it in an arch-specific way
+ *  (by referring the ABI for that processor, and the struct pt_regs)
  */
 static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -64,6 +67,15 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/uapi/asm/ptrace.h#L135
 	 */
 	param_fname_reg = (char __user *)regs->ARM_r1;
+#endif
+#ifdef CONFIG_ARM64
+	/* Aarch64 ABI:
+	 * First eight parameters to a function (and return val) are in the foll GPRs:
+	 *  x0 to x7 (64-bit GPRs)
+	 * See the kernel's pt_regs structure - rendition of the CPU registers here:
+	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm64/include/asm/ptrace.h#L173
+	 */
+	param_fname_reg = (char __user *)regs->regs[1];
 #endif
 
 	PRINT_CTX();
@@ -100,11 +112,13 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 #endif
 		return -EFAULT;
 
+#if 0
 	/* For the purpose of this demo, lets filter on the process context being
 	 * 'vi' only; else we'll get far too much log info to reasonably process...
 	 */
 	if (strncmp(current->comm, "vi", 2))
 		return 0;
+#endif
 
 	pr_info("FILE being opened: reg:0x%px   fname:%s\n",
 		(void *)param_fname_reg, fname);
