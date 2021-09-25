@@ -1,0 +1,3 @@
+KMOD=1_kprobe
+echo "sudo dmesg -C && make && ./test.sh && sleep 5 && sudo rmmod ${KMOD} 2>/dev/null ; sudo dmesg"
+sudo dmesg -C && make && ./test.sh && sleep 5 && sudo rmmod ${KMOD} 2>/dev/null ; sudo dmesg
