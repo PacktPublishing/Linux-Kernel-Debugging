@@ -1,7 +1,13 @@
-echo "dmesg -C && make && ./test.sh && sleep 1 && rmmod kprobe_lkm && dmesg"
+#!/bin/bash
+# run
+KMOD=3_kprobe
+USE_VI=1
 
-dmesg -C && make && ./test.sh && sleep .1
-vi /0setup*
-rmmod kprobe_lkm && dmesg
-
-#dmesg -C && make && ./test.sh && sleep 1 && rmmod kprobe_lkm && dmesg
+[ ${USE_VI} -eq 1 ] && {
+  sudo dmesg -C && make && ./test.sh && sleep .1
+  vi /0setup*
+  sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg
+} || {
+  echo "sudo dmesg -C && make && ./test.sh && sleep 1 && sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg"
+  sudo dmesg -C && make && ./test.sh && sleep 1 && sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg
+}
