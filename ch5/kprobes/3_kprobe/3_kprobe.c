@@ -14,6 +14,8 @@
  * Traditional and manual approach: attaching a kprobe via a module parameter
  * (to the open system call), plus retrieving the pathname to the file being
  * opened (useful!).
+ * To gain access to the second parameter (holding the pointer to the file
+ * being opened), we use our knowledge of the relevant processor ABI.
  *
  * For details, please refer the book, Ch 5.
  */
