@@ -45,7 +45,7 @@ else
 endif
 
 # Set FNAME_C to the kernel module name source filename (without .c)
-FNAME_C := kprobe_lkm
+FNAME_C := 3_kprobe
 
 PWD            := $(shell pwd)
 obj-m          += ${FNAME_C}.o

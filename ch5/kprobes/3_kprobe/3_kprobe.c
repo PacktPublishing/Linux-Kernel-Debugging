@@ -36,8 +36,6 @@ MODULE_DESCRIPTION("LKD book:ch5/kprobes/3_kprobe: simple Kprobes demo module wi
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
-#define SKIP_IF_NOT_VI
-
 static spinlock_t lock;
 static struct kprobe kpb;
 static u64 tm_start, tm_end;
@@ -52,6 +50,10 @@ static int verbose;
 module_param(verbose, int, 0644);
 MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
 
+static int skip_if_not_vi = 1;
+module_param(skip_if_not_vi, int, 0644);
+MODULE_PARM_DESC(skip_if_not_vi, "Set to 1 to ONLY see printk's when vi runs and opens files (default=1).");
+
 /*
  * This probe runs just prior to the function "kprobe_func()" is invoked.
  * IMP: Here, we're assuming you've setup a kprobe into the do_sys_open():
@@ -63,13 +65,13 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	char *param_fname_reg;
 
-#ifdef SKIP_IF_NOT_VI
-    /* For the purpose of this demo, we only log information when the process
-     * context is 'vi'
-     */
-    if (strncmp(current->comm, "vi", 2))
-        return 0;
-#endif
+	if (skip_if_not_vi) {
+	    /* For the purpose of this demo, we only log information when the process
+	     * context is 'vi'
+	     */
+		if (strncmp(current->comm, "vi", 2))
+			return 0;
+ 	}
 
 #ifdef CONFIG_X86
 	param_fname_reg = (char __user *)regs->si;
@@ -141,10 +143,13 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
  */
 static void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long flags)
 {
-#ifdef SKIP_IF_NOT_VI
-    if (strncmp(current->comm, "vi", 2))
-        return;
-#endif
+	if (skip_if_not_vi) {
+	    /* For the purpose of this demo, we only log information when the process
+	     * context is 'vi'
+	     */
+		if (strncmp(current->comm, "vi", 2))
+			return;
+	}
 
 	spin_lock(&lock);
 	tm_end = ktime_get_real_ns();
@@ -179,6 +184,8 @@ static int __init kprobe_lkm_init(void)
 		pr_warn("expect a valid kprobe_func=<func_name> module parameter");
 		return -EINVAL;
 	}
+	pr_info("FYI, skip_if_not_vi is %s, verbose=%d\n", (skip_if_not_vi==1?"on":"off"), verbose);
+
 	/********* Possible SECURITY concern:
      * We just assume the pointer passed is valid and okay.
 	 * Minimally, ensure that the passed function is NOT marked with any of:

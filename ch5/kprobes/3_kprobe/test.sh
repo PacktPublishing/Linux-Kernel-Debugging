@@ -1,9 +1,14 @@
 #!/bin/bash
 # test.sh
-KMOD=kprobe_lkm
+KMOD=3_kprobe
 FUNC_TO_KPROBE=do_sys_open
-VERBOSE=0
+VERBOSE=1
 
+[ $# -ne 1 ] && {
+	echo "Usage: $0 USE_VI ; 0 = show for all, 1 = show for vi only"
+	exit 1
+}
+SKIP_NOT_VI=$1
 DYNDBG_CTRL=/sys/kernel/debug/dynamic_debug/control
 if [ ! -f ${DYNDBG_CTRL} ]; then
    [ -f /proc/dynamic_debug/control ] && DYNDBG_CTRL=/proc/dynamic_debug/control \
@@ -17,7 +22,7 @@ if [ ! -f ./${KMOD}.ko ]; then
   make || exit 1
 fi
 sudo rmmod ${KMOD} 2>/dev/null # rm any stale instance
-sudo insmod ./${KMOD}.ko kprobe_func=${FUNC_TO_KPROBE} verbose=${VERBOSE} || exit 1
+sudo insmod ./${KMOD}.ko kprobe_func=${FUNC_TO_KPROBE} verbose=${VERBOSE} skip_if_not_vi=${SKIP_NOT_VI} || exit 1
 
 [ -z "${DYNDBG_CTRL}" ] && {
    echo "No dynamic debug control file available..."
@@ -31,4 +36,3 @@ sudo bash -c "grep \"${KMOD} .* =_ \" ${DYNDBG_CTRL}" && echo "Wrt module ${KMOD
 sudo bash -c "echo -n \"module ${KMOD} +p\" > ${DYNDBG_CTRL}"
 sudo bash -c "grep \"${KMOD}\" ${DYNDBG_CTRL}"
 echo "--   All set, look up kernel log with, f.e., journalctl -k -f   --"
-
