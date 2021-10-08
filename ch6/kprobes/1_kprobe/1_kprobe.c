@@ -25,21 +25,18 @@
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
+#include <linux/ptrace.h>
 #include <linux/uaccess.h>
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKD book:ch5/kprobes/1_kprobe_lkm: simple Kprobes demo module");
+MODULE_DESCRIPTION("LKD book:ch5/kprobes/1_kprobe: simple Kprobes 1st demo module");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
 static spinlock_t lock;
 static struct kprobe kpb;
-static volatile u64 tm_start, tm_end;
-
-static int verbose;
-module_param(verbose, int, 0644);
-MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
+static u64 tm_start, tm_end;
 
 /*
  * This probe runs just prior to the function "do_sys_open()" is invoked.
