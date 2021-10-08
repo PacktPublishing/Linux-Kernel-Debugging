@@ -1,5 +1,5 @@
 /*
- * ch5/kprobes/4_kprobe_helper/helper_kp.c
+ * ch6/kprobes/4_kprobe_helper/helper_kp.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -8,7 +8,7 @@
  *  GitHub repository:
  *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 5: Debug via Instrumentation - printk and friends
+ * From: Ch 6: Debug via Instrumentation - Kprobes
  ****************************************************************
  * Brief Description:
  * Our kprobes demo #4:
@@ -26,7 +26,7 @@
  * The job of this "helper" module is to setup the kprobe given the address.
  * The function must not be marked 'static' or 'inline' in the kernel / LKM.
  *
- * For details, please refer the book, Ch 5.
+ * For details, please refer the book, Ch 6.
  * License: MIT
  */
 #include <linux/module.h>

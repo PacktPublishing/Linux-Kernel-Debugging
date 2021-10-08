@@ -1,4 +1,4 @@
-# ch5/kprobes/1_kprobe/Makefile
+# ch6/kprobes/1_kprobe/Makefile
 # ***************************************************************
 # This program is part of the source code released for the book
 #  "Linux Kernel Debugging"
@@ -7,7 +7,7 @@
 #  GitHub repository:
 #  https://github.com/PacktPublishing/Linux-Kernel-Debugging
 #
-# From: Ch 5 : Debug via Instrumentation - printk and friends
+# From: Ch 6 : Debug via Instrumentation - Kprobes
 # ***************************************************************
 # Brief Description:
 # A 'better' Makefile template for Linux LKMs (Loadable Kernel Modules); besides
@@ -22,7 +22,7 @@
 # To get started, just type:
 #  make help
 #
-# For details, please refer the book, Ch 5.
+# For details, please refer the book, Ch 6.
 
 # To support cross-compiling for kernel modules:
 # For architecture (cpu) 'arch', invoke make as:

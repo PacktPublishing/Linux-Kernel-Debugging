@@ -1,5 +1,5 @@
 /*
- * ch5/kprobes/2_kprobe/2_kprobe.c
+ * ch6/kprobes/2_kprobe/2_kprobe.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -8,14 +8,14 @@
  *  GitHub repository:
  *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 5: Debug via Instrumentation - printk and friends
+ * From: Ch 6: Debug via Instrumentation - Kprobes
  ****************************************************************
  * Brief Description:
  * Traditional and manual approach: attaching a kprobe, slightly better,
  * soft-coding it via a module parameter (to the open system call);
  * via a module parameter.
  *
- * For details, please refer the book, Ch 5.
+ * For details, please refer the book, Ch 6.
  */
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 
@@ -31,7 +31,7 @@
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKD book:ch5/2_kprobes/2_kprobe: simple Kprobes demo module with modparam");
+MODULE_DESCRIPTION("LKD book:ch6/2_kprobes/2_kprobe: simple Kprobes demo module with modparam");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 

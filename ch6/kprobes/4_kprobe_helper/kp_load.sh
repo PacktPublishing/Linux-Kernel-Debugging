@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------------------------------------------------------
-# ch5/kprobes/4_kprobe_helper/kp_load.sh
+# ch6/kprobes/4_kprobe_helper/kp_load.sh
 # Helper script for the Kprobes Helper kernel module.
 # Params:
 #  $1 : Kernel Module pathname (func to kprobe is in this LKM) [OPTIONAL]
