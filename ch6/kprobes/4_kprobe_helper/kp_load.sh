@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------------------------------------------------------
-# kp_load.sh
+# ch5/kprobes/4_kprobe_helper/kp_load.sh
 # Helper script for the Kprobes Helper kernel module.
 # Params:
 #  $1 : Kernel Module pathname (func to kprobe is in this LKM) [OPTIONAL]
@@ -183,12 +183,12 @@ fi
 kprobes_check
 
 VERBOSE=0
-optspec=":h?-:"  #mod:probe:"
+optspec=":h?-:"
 while getopts "${optspec}" opt
 do
     #echo "1. opt = ${opt}  ind=${OPTIND}  OPTARG = ${OPTARG}"
     case "${opt}" in
-		-)                       # 'long' opts '--xxx' style, ala checksec!
+		-)                 # 'long' opts '--xxx' style, ala checksec!
         #echo "1. opt = ${opt}  ind=${OPTIND}  OPTARG = ${OPTARG}"
 		    case "${OPTARG}" in
 			  h|?|help)
@@ -241,7 +241,7 @@ if [ ! -f ${BASEFILE_H} ]; then
   exit 1
 fi
 
-export KPMOD=${BASEFILE}-${FUNCTION}-$(date +%d%b%y) #_%H%M%S)
+export KPMOD=${BASEFILE}-${FUNCTION}-$(date +%d%b%y)
 #export KPMOD=${BASEFILE}-${FUNCTION}-$(date +%d%m%y_%H%M%S)
 echo $SEP
 echo "KPMOD=${KPMOD}"
@@ -250,7 +250,6 @@ rm -rf tmp/ 2>/dev/null
 mkdir -p tmp/
 cd tmp
 cp ../${BASEFILE_C} ${KPMOD}.c || exit 1
-#cp ../${BASEFILE_H} . || exit 1
 
 echo "--- Generating tmp/Makefile ---------------------------------------------------"
 # Generate the Makefile
@@ -299,16 +298,6 @@ make || {
 }
 
 ls -l ${KPMOD}.ko
-
-##############################################
-
-#echo "ARCH=$ARCH"
-#TARGET_RFS_LOC=~/myprj   ## UPDATE! for your system
-#if [ "${ARCH}" = "arm" ]; then
-#	echo "Built module for ARM, copying to target RFS. Run on target to test.."
-#	sudo cp ${KPMOD}.ko ${TARGET_RFS_LOC}
-#	exit 0
-#fi
-
 insert_kprobe
+
 exit 0

@@ -1,5 +1,20 @@
 /*
- * helper_kp.c v1.0 <date>
+ * ch5/kprobes/4_kprobe_helper/helper_kp.c
+ ***************************************************************
+ * This program is part of the source code released for the book
+ *  "Linux Kernel Debugging"
+ *  (c) Author: Kaiwan N Billimoria
+ *  Publisher:  Packt
+ *  GitHub repository:
+ *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
+ *
+ * From: Ch 5: Debug via Instrumentation - printk and friends
+ ****************************************************************
+ * Brief Description:
+ * Our kprobes demo #4:
+ * Traditional, semi-automated manual approach: a helper script generates a
+ * template for both the kernel module C code and the Makefile, enabling
+ * attaching a kprobe to a given function via module parameter.
  *
  * This 'C' source will act as a template:
  * the helper script kp_load.sh will:
@@ -11,7 +26,7 @@
  * The job of this "helper" module is to setup the kprobe given the address.
  * The function must not be marked 'static' or 'inline' in the kernel / LKM.
  *
- * Kaiwan N Billimoria
+ * For details, please refer the book, Ch 5.
  * License: MIT
  */
 #include <linux/module.h>
@@ -20,6 +35,7 @@
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
+#include <linux/ptrace.h>
 #include "../../../../convenient.h"
 
 #define MODULE_VER 		"0.1"

@@ -28,6 +28,7 @@
 #include <linux/interrupt.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
+#include <linux/ptrace.h>
 #include <linux/uaccess.h>
 #include "../../../convenient.h"
 
