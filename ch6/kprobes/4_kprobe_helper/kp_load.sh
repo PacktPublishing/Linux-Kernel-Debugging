@@ -31,13 +31,12 @@ if [ -z "${FUNC}" ]; then
 	echo "*** ${name}: function name null, aborting now.."
 	exit 1
 fi
-ShowTitle "[ Validate the to-be-Kprobed function ${FUNC} ]"
+ShowTitle "[ Validate the to-be-kprobed function ${FUNC} ]"
 
 # Attempt to find out if it's valid in the kernel.
 # In any case, if the function is invalid, it will be caught on the 
 # register_kprobe(), which will then fail..
 
-# TODO: what about embedded system which don't have either SYMLOC ??
 if [ ! -f /proc/kallsyms ]; then
   if [ ! -f /boot/System.map-$(uname -r) ]; then
   	echo
@@ -54,7 +53,11 @@ if [ -f /proc/kallsyms ]; then
   SYMLOC=/proc/kallsyms
 elif [ -f /boot/System.map-$(uname -r) ]; then
   SYMLOC=/boot/System.map-$(uname -r)
+else
+  # TODO: what about embedded system which don't have either SYMLOC ??
+  SYMLOC=${DBGFS_MNT}/tracing/available_filter_functions  # ??
 fi
+#echo "SYMLOC=${SYMLOC}"
 
 # Is the to-be-kprobe'd function blacklisted?
 if [ ! -z "${DBGFS_MNT}" ]; then
@@ -110,7 +113,7 @@ fi
 echo ${SEP}
 
 # 2. Insert the helper_kp kernel module that will set up the kprobe
-/sbin/insmod ./${KPMOD}.ko funcname=${FUNCTION} verbose=${VERBOSE} || {
+/sbin/insmod ./${KPMOD}.ko funcname=${FUNCTION} verbose=${VERBOSE} show_stack=${SHOWSTACK} || {
 	echo "${name}: insmod ${KPMOD} unsuccessful, aborting now.."
 	if [ ${PROBE_KERNEL} -eq 0 ]; then
 		/sbin/rmmod ${TARGET_MODULE}
@@ -131,7 +134,8 @@ usage()
        ---probe=probe-this-function  : if module-pathname is not passed, 
                                            then we assume the function to be kprobed is in the kernel itself.
        [--mod=module-pathname]       : pathname of kernel module that has the function-to-probe
-       [--verbose]                   : run in verbose mode	
+       [--verbose]                   : run in verbose mode; shows PRINT_CTX() o/p, etc
+       [--showstack]                 : display kernel-mode stack, see how we got here!
        [--help]                      : show this help screen"
 	exit
 }
@@ -183,6 +187,7 @@ fi
 kprobes_check
 
 VERBOSE=0
+SHOWSTACK=0
 optspec=":h?-:"
 while getopts "${optspec}" opt
 do
@@ -201,6 +206,7 @@ do
 				TARGET_MODULE=$(echo "${OPTARG}" |cut -d'=' -f2)
 				PROBE_KERNEL=0 ;;
 			  verbose) VERBOSE=1 ;;
+			  showstack) SHOWSTACK=1 ;;
 			  *) echo "Unknown option '${OPTARG}'" #; usage
 				;;
   	        esac
@@ -208,7 +214,7 @@ do
 done
 shift $((OPTIND-1))
 
-[ ${VERBOSE} -eq 1 ] && echo "FUNCTION=${FUNCTION} PROBE_KERNEL=${PROBE_KERNEL} TARGET_MODULE=${TARGET_MODULE} ; VERBOSE=${VERBOSE}"
+[ ${VERBOSE} -eq 1 ] && echo "FUNCTION=${FUNCTION} PROBE_KERNEL=${PROBE_KERNEL} TARGET_MODULE=${TARGET_MODULE} ; VERBOSE=${VERBOSE} SHOWSTACK=${SHOWSTACK}"
 [ -z "${FUNCTION}" ] && {
   echo "${name}: minimally, a function to be kprobe'd has to be specified (via the --probe=func option)
 "

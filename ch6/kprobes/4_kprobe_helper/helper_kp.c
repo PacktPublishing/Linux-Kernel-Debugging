@@ -52,6 +52,10 @@ static int verbose;
 module_param(verbose, int, 0644);
 MODULE_PARM_DESC(verbose, "Set to 1 to get verbose printk's (defaults to 0).");
 
+static int show_stack;
+module_param(show_stack, int, 0644);
+MODULE_PARM_DESC(show_stack, "Set to 1 to dump the kernel-mode stack; defaults to 0).");
+
 static struct kprobe kpb;
 static u64 tm_start = 0, tm_end = 0;
 static int running_avg=0;
@@ -69,8 +73,10 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	if (verbose) {
 		pr_debug_ratelimited("%s:%s():Pre '%s'.\n", KBUILD_MODNAME, __func__, funcname);
 		PRINT_CTX();
-		//dump_stack();
 	}
+	if (show_stack)
+		dump_stack();
+
 	return 0;
 }
 
@@ -99,8 +105,8 @@ static int __init helper_kp_init_module(void)
 		return -EINVAL;
 	}
 	spin_lock_init(&lock);
-	pr_info("%s:%s():kprobe'ing function %s, verbose mode %s\n",
-		KBUILD_MODNAME, __func__, funcname, (verbose==1?"Y":"N"));
+	pr_info("%s:%s():kprobe'ing function %s, verbose mode? %s, show stack? %s\n",
+		KBUILD_MODNAME, __func__, funcname, (verbose==1?"Y":"N"), (show_stack==1?"Y":"N"));
 
 	/********* Possible SECURITY concern:
  	 * We just assume the pointer passed is valid and okay.
