@@ -1,16 +1,22 @@
 /*
- * ch1/miscdrv_rdwr/miscdrv_rdwr.c
+ * ch5/miscdrv_rdwr/miscdrv_rdwr.c
  ***************************************************************
  * This program is part of the source code released for the book
- *  "Linux Kernel Programming (Part 2)"
+ *  "Linux Kernel Debugging"
  *  (c) Author: Kaiwan N Billimoria
  *  Publisher:  Packt
  *  GitHub repository:
- *  https://github.com/PacktPublishing/Linux-Kernel-Programming-Part-2
+ *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 1 : Writing a Simple Misc Character Device Driver
+ * From: Ch 5 : Debug via Instrumentation - using Kprobes
  ****************************************************************
  * Brief Description:
+ * This driver is originally sourced from my earlier book:
+ * Linux Kernel Programming - Part 2.
+ * (https://github.com/PacktPublishing/Linux-Kernel-Programming-Part-2/tree/main/ch1/miscdrv_rdwr)
+ * We simply use it as a test bed here...
+ * The original comments are below:
+ *
  * This driver is built upon our previous 'skeleton' ../miscdrv/ misc
  * framework driver. The key difference: we use a few global data items within
  * a driver 'private' data structure throughout.
@@ -23,7 +29,7 @@
  * When a user mode process writes data to us, we consider that data to be the
  * new 'secret' string and update it here (in driver memory).
  *
- * For details, please refer the book, Ch 1.
+ * For details, please refer the book, Ch 5.
  */
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 
@@ -47,7 +53,7 @@
 
 #define OURMODNAME   "miscdrv_rdwr"
 MODULE_AUTHOR("Kaiwan N Billimoria");
-MODULE_DESCRIPTION("LKP-2 book:ch1/miscdrv_rdwr: simple misc char driver with"
+MODULE_DESCRIPTION("LKD book:ch5/miscdrv_rdwr: simple misc char driver with"
 " a 'secret' to read/write");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
