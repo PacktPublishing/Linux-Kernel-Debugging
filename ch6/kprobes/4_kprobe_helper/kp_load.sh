@@ -75,6 +75,9 @@ grep -w "[tT] ${FUNC}" ${SYMLOC} || {
  echo "
 *** ${name}: FATAL: Symbol '${FUNC}' not found!
 [Either it's invalid -or- Could it be static or inline?]. Aborting..."
+
+ echo "--- Possible close matches ---"
+ grep "${FUNC}" /proc/kallsyms |awk '{print $3}'|grep -v "\."
  exit 1
  }
 num=$(grep -w "[tT] ${FUNC}" ${SYMLOC} |wc -l)
@@ -85,21 +88,44 @@ num=$(grep -w "[tT] ${FUNC}" ${SYMLOC} |wc -l)
  }
 }
 
+# Insert the helper_kp kernel module that will set up our custom kprobe
+load_helperkp_module()
+{
+ echo "/sbin/insmod ./${KPMOD}.ko funcname=${FUNCTION} verbose=${VERBOSE} show_stack=${SHOWSTACK}"
+ /sbin/insmod ./${KPMOD}.ko funcname=${FUNCTION} verbose=${VERBOSE} show_stack=${SHOWSTACK} || {
+	echo "${name}: insmod ${KPMOD} unsuccessful, aborting now.."
+	if [ ${PROBE_KERNEL} -eq 0 ]; then
+		/sbin/rmmod ${TARGET_MODULE} 2>/dev/null
+	fi
+	echo "dmesg|tail"
+	dmesg|tail
+	exit 7
+ }
+}
+
+# If not already inserted, insert the LKM (kernel module) ${KPMOD}
 # Running as root here...
 insert_kprobe()
 {
-########## Lets run! #########################
-echo ${SEP}
+if [ ${PROBE_KERNEL} -eq 0 ] ; then
+ local already_inserted=0
+ local kmod_name=$(basename ${TARGET_MODULE::-3})  # rm the .ko too...
+ lsmod|grep -q -w ${kmod_name} && already_inserted=1
+
+ echo "+++ already_inserted=${already_inserted}
+ "
+
+ dmesg -C
+ echo ${SEP}
+ if [ ${already_inserted} -eq 0 ]; then
+    echo " Inserting target kernel module ${TARGET_MODULE} now..."
 # rmmod any old instances
-/sbin/rmmod ${KPMOD} 2>/dev/null
-if [ ${PROBE_KERNEL} -eq 0 ]; then
-	/sbin/rmmod ${TARGET_MODULE} 2>/dev/null
-fi
+#/sbin/rmmod ${KPMOD} 2>/dev/null
+#if [ ${PROBE_KERNEL} -eq 0 ]; then
+#	/sbin/rmmod ${TARGET_MODULE} 2>/dev/null
+#fi
 
-dmesg -C
-
-# 1. If a module function is to be probed, first insert the kernel module
-if [ ${PROBE_KERNEL} -eq 0 ]; then
+    # If a module function is to be probed, first insert the kernel module
 	/sbin/insmod ${TARGET_MODULE} || {
 		echo "$name: insmod ${TARGET_MODULE} unsuccessful, aborting now.."
 		echo "dmesg|tail"
@@ -109,23 +135,17 @@ if [ ${PROBE_KERNEL} -eq 0 ]; then
 	echo "${name}: insmod ${TARGET_MODULE} successful."
 	echo "dmesg|tail"
 	dmesg|tail
+ else
+    echo " kernel module ${KPMOD} is already inserted... proceeding..."
+ fi
+ load_helperkp_module
+else # probing a kernel func..
+ load_helperkp_module
+ echo "${name}: successful."
+ echo "dmesg|tail"
+ dmesg|tail
+ cd ..
 fi
-echo ${SEP}
-
-# 2. Insert the helper_kp kernel module that will set up the kprobe
-/sbin/insmod ./${KPMOD}.ko funcname=${FUNCTION} verbose=${VERBOSE} show_stack=${SHOWSTACK} || {
-	echo "${name}: insmod ${KPMOD} unsuccessful, aborting now.."
-	if [ ${PROBE_KERNEL} -eq 0 ]; then
-		/sbin/rmmod ${TARGET_MODULE}
-	fi
-	echo "dmesg|tail"
-	dmesg|tail
-	exit 7
-}
-echo "${name}: successful."
-echo "dmesg|tail"
-dmesg|tail
-cd ..
 }
 
 usage()
