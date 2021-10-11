@@ -1,20 +1,31 @@
 #!/bin/bash
-#------------------------------------------------------------------------------
 # ch6/kprobes/4_kprobe_helper/kp_load.sh
-# Helper script for the Kprobes Helper kernel module.
-# Params:
-#  $1 : Kernel Module pathname (func to kprobe is in this LKM) [OPTIONAL]
-#  $2 : Function name to kprobe [REQD]
-#  $3 : Verbose flag [0|1] [OPTIONAL]
+# ***************************************************************
+# This program is part of the source code released for the book
+#  "Linux Kernel Debugging"
+#  (c) Author: Kaiwan N Billimoria
+#  Publisher:  Packt
+#  GitHub repository:
+#  https://github.com/PacktPublishing/Linux-Kernel-Debugging
+#
+# From: Ch 6: Debug via Instrumentation - Kprobes
+#***************************************************************
+# Brief Description:
+# Our kprobes demo #4:
+# Traditional, semi-automated manual approach: a helper script generates a
+# template for both the kernel module C code and the Makefile, enabling
+# attaching a kprobe to a given function via module parameter.
+# (See the 'usage' screen by just typing the script's name with no arguments).
 # 
 # Notes:
-# - The function to kprobe must not be marked 'static' or 'inline' in the kernel / LKM.
+# - The function to kprobe must not be marked 'static' or 'inline' in the kernel
+#   / LKM or be blacklisted by the kprobes machinery
 # - This script dynamically "generates" an LKM in <pwd>/tmp/ .
-# Filename format: ${BASEFILE}-${FUNCTION}-$(date +%d%m%y_%H%M%S).ko
-# To do so, it generates a Makefile and builds the LKM, and even insmod'd it!
+# Filename format: ${BASEFILE}-${FUNCTION}-$(date +%d%m%y).ko
+# To do so, it generates a Makefile and builds the LKM, and even insmod's it!
 #
-# Author: Kaiwan N Billimoria <kaiwan@designergraphix.com>
-# License: [L]GPL
+# Author: Kaiwan N Billimoria
+# License: MIT
 #------------------------------------------------------------------------------
 name=$(basename $0)
 source ./common.sh || {
@@ -112,19 +123,12 @@ if [ ${PROBE_KERNEL} -eq 0 ] ; then
  local kmod_name=$(basename ${TARGET_MODULE::-3})  # rm the .ko too...
  lsmod|grep -q -w ${kmod_name} && already_inserted=1
 
- echo "+++ already_inserted=${already_inserted}
- "
+# echo "+++ already_inserted=${already_inserted}"
 
  dmesg -C
  echo ${SEP}
  if [ ${already_inserted} -eq 0 ]; then
     echo " Inserting target kernel module ${TARGET_MODULE} now..."
-# rmmod any old instances
-#/sbin/rmmod ${KPMOD} 2>/dev/null
-#if [ ${PROBE_KERNEL} -eq 0 ]; then
-#	/sbin/rmmod ${TARGET_MODULE} 2>/dev/null
-#fi
-
     # If a module function is to be probed, first insert the kernel module
 	/sbin/insmod ${TARGET_MODULE} || {
 		echo "$name: insmod ${TARGET_MODULE} unsuccessful, aborting now.."
@@ -312,9 +316,6 @@ endif
 clean:
 	\$(MAKE) -C \$(KDIR) SUBDIRS=\$(PWD) clean
 @MYMARKER@
-
-#rm -f convenient.h
-ln -sf ../convenient.h  # adjust for your workspace
 
 echo "--- make ---------------------------------------------------"
 make || {
