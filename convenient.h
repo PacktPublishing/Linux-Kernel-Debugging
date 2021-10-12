@@ -263,7 +263,7 @@ void delay_sec(long val)
 	asm ("");    // force the compiler to not inline it!
 	if (in_task()) {
 		set_current_state(TASK_INTERRUPTIBLE);
-		if (-1 == val)
+		if (val == -1)
 			schedule_timeout(MAX_SCHEDULE_TIMEOUT);
 		else
 			schedule_timeout(val * HZ);
@@ -283,11 +283,12 @@ void delay_sec(long val)
 #include <linux/ktime.h>
 #define SHOW_DELTA(later, earlier)  do {    \
     if (time_after((unsigned long)later, (unsigned long)earlier)) { \
-        pr_info("delta: %lld ns (~ %lld us ~ %lld ms)\n",   \
-            ktime_sub(later, earlier), \
-            ktime_sub(later, earlier)/1000, \
-            ktime_sub(later, earlier)/1000000 \
-        ); \
+	    s64 delta_ns = ktime_to_ns(ktime_sub(later, earlier));      \
+        pr_info("delta: %lld ns", delta_ns);       \
+		if (delta_ns/1000 >= 1)                    \
+			pr_info(" %lld us", delta_ns/1000);    \
+		if (delta_ns/1000000 >= 1)                 \
+			pr_info(" %lld ms", delta_ns/1000000); \
     } else  \
         pr_warn("SHOW_DELTA(): *invalid* earlier > later?\n");  \
 } while (0)
