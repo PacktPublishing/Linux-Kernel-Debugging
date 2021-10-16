@@ -187,6 +187,23 @@
 	);                                                                           \
 } while (0)
 #endif
+/*
+ * Interesting:
+ * Above, I had to change the smp_processor_id() to raw_smp_processor_id(); else,
+ * on a DEBUG kernel (configured with many debug config options), the foll warnings
+ * would ensue:
+Oct 04 12:19:53 dbg-LKD kernel: BUG: using smp_processor_id() in preemptible [00000000] code: rdmem/12133
+Oct 04 12:19:53 dbg-LKD kernel: caller is debug_smp_processor_id+0x17/0x20
+Oct 04 12:19:53 dbg-LKD kernel: CPU: 0 PID: 12133 Comm: rdmem Tainted: G      D    O      5.10.60-dbg01 #1
+Oct 04 12:19:53 dbg-LKD kernel: Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+Oct 04 12:19:53 dbg-LKD kernel: Call Trace:
+Oct 04 12:19:53 dbg-LKD kernel:  dump_stack+0xbd/0xfa
+...
+ * This is caught due to the fact that, on a debug kernel, when the kernel config
+ * CONFIG_DEBUG_PREEMPT is enabled, it catches the possibility that functions
+ * like smp_processor_id() are called in an atomic context where sleeping / preemption
+ * is disallowed! With the 'raw' version it works without issues (just as Ftrace does).
+ */
 
 /*------------------------ assert ---------------------------------------
  * Hey, careful!
