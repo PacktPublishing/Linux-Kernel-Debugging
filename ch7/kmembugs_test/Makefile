@@ -24,6 +24,9 @@
 #
 # For details, please refer the book, Ch 7.
 
+#--------- include directive
+#include scripts/Kbuild.include
+
 # To support cross-compiling for kernel modules:
 # For architecture (cpu) 'arch', invoke make as:
 #  make ARCH=<arch> CROSS_COMPILE=<cross-compiler-prefix>
@@ -44,6 +47,11 @@ else
   KDIR ?= /lib/modules/$(shell uname -r)/build
 endif
 
+# Compiler
+CC     := gcc
+#CC     := gcc-10
+#CC := clang
+
 # Set FNAME_C to the kernel module name source filename (without .c)
 FNAME_C := kmembugs_test
 
@@ -61,35 +69,46 @@ obj-m          += ${FNAME_C}.o
 # macro var name, MYDEBUG).
 MYDEBUG := n
 ifeq (${MYDEBUG}, y)
-  EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Wall -fno-omit-frame-pointer
+
+# https://www.kernel.org/doc/html/latest/kbuild/makefiles.html#compilation-flags
+# CFLAGS_EXTRA deprecated; use ccflags-y
+  ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
+  #EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
+  # man gcc: "...-Og may result in a better debugging experience"
 else
-#  INSTALL_MOD_STRIP=1
+  INSTALL_MOD_STRIP := 1
+  #ccflags-y   += --strip-debug
 #  EXTRA_CFLAGS   += -UDEBUG
 endif
 # We always keep the dynamic debug facility enabled; this allows us to turn
 # dynamically turn on/off debug printk's later... To disable it simply comment
 # out the following line
-EXTRA_CFLAGS   += -DDYNAMIC_DEBUG_MODULE
+ccflags-y   += -DDYNAMIC_DEBUG_MODULE
+#EXTRA_CFLAGS   += -DDYNAMIC_DEBUG_MODULE
 
 KMODDIR ?= /lib/modules/$(shell uname -r)
 STRIP := ${CROSS_COMPILE}strip
 
+# gcc-10 issue:
+#EXTRA_CFLAGS  += $(call cc-option,--allow-store-data-races)
+
 all:
 	@echo
-	@echo '--- Building : KDIR=${KDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} EXTRA_CFLAGS=${EXTRA_CFLAGS} ---'
+	@echo '--- Building : KDIR=${KDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} ccflags-y=${ccflags-y} ---'
+	@${CC} --version|head -n1
 	@echo
 	make -C $(KDIR) M=$(PWD) modules
 	$(shell [ "${MYDEBUG}" != "y" ] && ${STRIP} --strip-debug ./${FNAME_C}.ko)
 install:
 	@echo
 	@echo "--- installing ---"
-	@echo " [First, invoke the 'make' ]"
+	@echo " [First, invoking the 'make' ]"
 	make
 	@echo
 	@echo " [Now for the 'sudo make install' ]"
 	sudo make -C $(KDIR) M=$(PWD) modules_install
-# TODO/FIXME: stripped ver doesn't make it to the KMODDIR folder ??
-	$(shell [ "${MYDEBUG}" != "y" ] && sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko)
+	@echo " [If !debug, stripping debug info from ${KMODDIR}/extra/${FNAME_C}.ko]"
+	$(shell if [ "${MYDEBUG}" != "y" ]; then sudo /usr/bin/strip --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
 clean:
 	@echo
 	@echo "--- cleaning ---"
