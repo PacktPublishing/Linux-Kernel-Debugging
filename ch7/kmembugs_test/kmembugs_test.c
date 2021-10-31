@@ -41,10 +41,10 @@ MODULE_VERSION("0.1");
 static bool kasan_multishot;
 
 /* The UMR - Uninitialized Memory Read - testcase */
-static void umr(void)
+static int umr(void)
 {
 	int x;
-	/* V recent gcc does have the ability to detect this!
+	/* Recent gcc does have the ability to detect this!
 	 * To get warnings on this, you require to:
 	 * a) use some optimization level besides 0 (-On, n != 0)
 	 * b) pass the -Wuninitialized or -Wall compiler option.
@@ -56,22 +56,14 @@ static void umr(void)
 	 * Also see gcc(1) for the -Wmaybe-uninitialized option.
 	 */
 
-	if (x)
-		pr_info("true case: x=%d\n", x);
-	else
-		pr_info("false case (x==0)\n");
+	return x;
 }
 
 /* The UAR - Use After Return - testcase */
 static void *uar(void)
 {
 	char name[NUM_ALLOC];
-#if 0				/* this too fails to be detected as a UAR ! */
-	char *q = NULL;
-	q = kzalloc(NUM_ALLOC, GFP_KERNEL);
-	strncpy(q, "Linux kernel debug", 18);
-	return q;
-#endif
+
 	memset(name, 0, NUM_ALLOC);
 	strncpy(name, "Linux kernel debug", 18);
 
@@ -83,21 +75,29 @@ static void *uar(void)
 	 */
 }
 
-/* A simple memory leakage testcase */
-static int leak_simple(void)
+/* A simple memory leakage testcase 1 */
+static void leak_simple1(void)
 {
 	char *p = NULL;
 
-	pr_info("simple memory leak testcase\n");
 	p = kzalloc(1520, GFP_KERNEL);
 	if (unlikely(!p))
-		return -ENOMEM;
-	print_hex_dump_bytes("p: ", DUMP_PREFIX_OFFSET, p, 32);
+		return;
 
-#if 0
-	kfree(p);
-#endif
-	return 0;
+	if (0) // test: ensure it isn't freed
+		kfree(p);
+}
+
+/* A simple memory leakage testcase 2.
+ * The caller's to free the memory...
+ */
+static void *leak_simple2(void)
+{
+	void *q = NULL;
+
+	q = kzalloc(NUM_ALLOC, GFP_KERNEL);
+	snprintf(q, NUM_ALLOC-1, "%s(): linux kernel debug", __func__);
+	return q;
 }
 
 static int __init kmembugs_test_init(void)
@@ -106,21 +106,28 @@ static int __init kmembugs_test_init(void)
 
 	kasan_multishot = kasan_save_enable_multi_shot();
 	for (i = 0; i < numtimes; i++) {
-		char *res;
+		int umr_ret;
+		char *res1 = NULL, *res2 = NULL;
 
 		// 1. Run the UMR - Uninitialized Memory Read - testcase
-		umr();
+		umr_ret = umr();
+		pr_info("testcase 1: UMR (val=%d)\n", umr_ret);
 
 		// 2. Run the UAR - Use After Return - testcase
-		res = kmalloc(NUM_ALLOC, GFP_KERNEL);
-		if (unlikely(!res))
-			return -ENOMEM;
-		res = uar();
-		pr_info("res: %s\n", res == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res);
-		kfree(res);
+		res1 = uar();
+		pr_info("testcase 2: UAR: res1 = \"%s\"\n",
+			res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
 
-		// 3. memleak
-		leak_simple();
+		// 3. memory leak 1
+		pr_info("testcase 3: simple memory leak testcase 1\n");
+		leak_simple1();
+
+		// 4. memory leak 2: caller's to free the memory!
+		pr_info("testcase 4: simple memory leak testcase 2\n");
+		res2 = (char *)leak_simple2();
+		pr_info(" res2 = \"%s\"\n", res2 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res2);
+		if (0) // test: ensure it isn't freed by the caller
+			kfree(res2);
 	}
 
 	return 0;		/* success */
