@@ -1,4 +1,4 @@
-# ch7/kmembugs_test/Makefile
+# Makefile
 # ***************************************************************
 # This program is part of the source code released for the book
 #  "Linux Kernel Debugging"
@@ -7,7 +7,6 @@
 #  GitHub repository:
 #  https://github.com/PacktPublishing/Linux-Kernel-Debugging
 #
-# From: Ch 7 : Debugging kernel memory issues
 # ***************************************************************
 # Brief Description:
 # A 'better' Makefile template for Linux LKMs (Loadable Kernel Modules); besides
@@ -15,21 +14,30 @@
 # do useful (and indeed required) stuff like:
 #  - adhering to kernel coding style (indent+checkpatch)
 #  - several static analysis targets (via sparse, gcc, flawfinder, cppcheck)
-#  - two 'dummy' dynamic analysis targets (KASAN, LOCKDEP)
+#  - two _dummy_ dynamic analysis targets (KASAN, LOCKDEP); just to remind you!
 #  - a packaging (.tar.xz) target and
 #  - a help target.
 #
 # To get started, just type:
 #  make help
 #
-# For details, please refer the book, Ch 7.
+# For details on this so-called 'better' Makefile, please refer my earlier book
+# 'Linux Kernel Programming', Packt, Mar 2021, Ch 5 section 'A "better" Makefile
+# template for your kernel modules'.
 
-#--------- include directive
-#include scripts/Kbuild.include
+#------------------------------------------------------------------
+# Set FNAME_C to the kernel module name source filename (without .c)
+# This enables you to use this Makefile as a template; just update this variable!
+# As well, the MYDEBUG variable (see it below) can be set to 'y' or 'n' (no being
+# the default)
+FNAME_C := kmembugs_test
+#------------------------------------------------------------------
 
 # To support cross-compiling for kernel modules:
 # For architecture (cpu) 'arch', invoke make as:
 #  make ARCH=<arch> CROSS_COMPILE=<cross-compiler-prefix>
+# The KDIR var is set to a sample path below; you're expected to update it on
+# your box to the appropriate path to the kernel src tree for that arch.
 ifeq ($(ARCH),arm)
   # *UPDATE* 'KDIR' below to point to the ARM Linux kernel source tree on your box
   KDIR ?= ~/rpi_work/kernel_rpi/linux
@@ -48,12 +56,9 @@ else
 endif
 
 # Compiler
-CC     := gcc
-#CC     := gcc-10
+CC     := $(CROSS_COMPILE)gcc
+#CC     := $(CROSS_COMPILE)gcc-10
 #CC := clang
-
-# Set FNAME_C to the kernel module name source filename (without .c)
-FNAME_C := kmembugs_test
 
 PWD            := $(shell pwd)
 obj-m          += ${FNAME_C}.o
@@ -62,7 +67,8 @@ obj-m          += ${FNAME_C}.o
 # Set the MYDEBUG variable accordingly to y/n resp.
 # (Actually, debug info is always going to be generated when you build the
 # module on a debug kernel, where CONFIG_DEBUG_INFO is defined, making this
-# setting of the EXTRA_CFLAGS variable mostly redundant (besides the -DDEBUG).
+# setting of the ccflags-y (or EXTRA_CFLAGS) variable mostly redundant (besides
+# the -DDEBUG).
 # This simply helps us influence the build on a production kernel, forcing
 # generation of debug symbols, if so required. Also, realize that the DEBUG
 # macro is turned on by many CONFIG_*DEBUG* options; hence, we use a different
@@ -71,26 +77,23 @@ MYDEBUG := n
 ifeq (${MYDEBUG}, y)
 
 # https://www.kernel.org/doc/html/latest/kbuild/makefiles.html#compilation-flags
-# CFLAGS_EXTRA deprecated; use ccflags-y
+# EXTRA_CFLAGS deprecated; use ccflags-y
   ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
-  #EXTRA_CFLAGS   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
   # man gcc: "...-Og may result in a better debugging experience"
 else
   INSTALL_MOD_STRIP := 1
   #ccflags-y   += --strip-debug
-#  EXTRA_CFLAGS   += -UDEBUG
 endif
 # We always keep the dynamic debug facility enabled; this allows us to turn
 # dynamically turn on/off debug printk's later... To disable it simply comment
 # out the following line
 ccflags-y   += -DDYNAMIC_DEBUG_MODULE
-#EXTRA_CFLAGS   += -DDYNAMIC_DEBUG_MODULE
 
 KMODDIR ?= /lib/modules/$(shell uname -r)
 STRIP := ${CROSS_COMPILE}strip
 
 # gcc-10 issue:
-#EXTRA_CFLAGS  += $(call cc-option,--allow-store-data-races)
+#ccflags-y  += $(call cc-option,--allow-store-data-races)
 
 all:
 	@echo
@@ -108,7 +111,7 @@ install:
 	@echo " [Now for the 'sudo make install' ]"
 	sudo make -C $(KDIR) M=$(PWD) modules_install
 	@echo " [If !debug, stripping debug info from ${KMODDIR}/extra/${FNAME_C}.ko]"
-	$(shell if [ "${MYDEBUG}" != "y" ]; then sudo /usr/bin/strip --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
+	$(shell if [ "${MYDEBUG}" != "y" ]; then sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
 clean:
 	@echo
 	@echo "--- cleaning ---"
@@ -116,6 +119,8 @@ clean:
 	make -C $(KDIR) M=$(PWD) clean
 # from 'indent'
 	rm -f *~
+
+# Any usermode programs to build? Insert the build target(s) here
 
 #--------------- More (useful) targets! -------------------------------
 INDENT := indent
@@ -160,7 +165,8 @@ sa_sparse:
 	@echo "--- static analysis with sparse ---"
 	@echo
 # if you feel it's too much, use C=1 instead
-	make C=2 CHECK="/usr/bin/sparse" -C $(KDIR) M=$(PWD) modules
+# NOTE: deliberately IGNORING warnings from kernel headers!
+	make -Wsparse-all C=2 CHECK="/usr/bin/sparse --os=linux --arch=$(ARCH)" -C $(KDIR) M=$(PWD) modules 2>&1 |egrep -v "^\./include/.*\.h|^\./arch/.*\.h"
 
 # static analysis with gcc
 sa_gcc:
