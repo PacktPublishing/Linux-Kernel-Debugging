@@ -1,0 +1,37 @@
+#!/bin/bash
+# Recurse through all src dirs, cleanup, set the correct 'better' Makefile!
+
+TOP=$(pwd)
+i=1
+for lkmdir in $(find . -type d)
+do
+  cd ${TOP}
+  nm=$(dirname ${lkmdir} |cut -d/ -f2)
+
+  # skip these...
+  [ "${nm}" = "tmp" -o "${nm}" = ".git" -o "${nm}" = "./.git" -o "${nm}" = "bkp" ] && continue
+  #echo "lkmdir=${lkmdir}"
+
+  # ok, process
+  cd ${lkmdir} || {
+    echo "cd failed! ??"
+	continue
+  }
+  [ ! -f Makefile ] && continue
+  echo "$i. ============================================================================="
+  pwd
+  echo "================================================================================"
+
+  # get C source filename
+  numc=$(ls *.c|wc -w)
+  [ ${numc} -le 0 -o ${numc} -gt 1 ] && {
+     echo "None -or- >1 C soruce files here, skipping dir..."
+	 continue
+  }
+  csrc=$(ls *.c)
+  #echo "csrc=${csrc} nm=${csrc::-2}"
+  ${TOP}/updtMakefile2better ${csrc::-2}
+
+  let i=i+1
+done
+exit 0

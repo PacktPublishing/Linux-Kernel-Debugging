@@ -1,0 +1,33 @@
+#!/bin/bash
+# updtMakefile2better
+SRC=~/Linux-Kernel-Debugging
+ORIG=${SRC}/Makefile.better
+
+[ $# -ne 1 ] && {
+  echo "usage: $0 <C-src-filename-without-extension>"
+  exit 1
+}
+make clean
+mv Makefile Makefile.old 2>/dev/null
+cp ${ORIG} Makefile
+
+fname=$(echo "${1}" | sed -e 's/[]$.*[\^]/\\&/g' )
+sed -i -e "s/FNAME_C := .*/FNAME_C := ${fname}/" Makefile
+grep "^FNAME_C" Makefile
+
+TEST1_BUILDIT=1
+if [ ${TEST1_BUILDIT} -eq 1 ] ; then
+  echo "--------------------------------------------------------"
+  make
+  ls -lh
+  make clean
+fi
+TEST2_RUNIT=0
+if [ ${TEST2_RUNIT} -eq 1 ] ; then
+  echo "--------------------------------------------------------"
+  ${SRC}/lkm ${fname}
+  sudo rmmod ${fname}
+  sleep 1
+  make clean
+  ls -lh
+fi
