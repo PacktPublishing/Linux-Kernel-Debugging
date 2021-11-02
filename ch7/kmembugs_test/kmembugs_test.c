@@ -43,7 +43,7 @@ static bool kasan_multishot;
 /* The UMR - Uninitialized Memory Read - testcase */
 static int umr(void)
 {
-	int x;
+	volatile int x;
 	/* Recent gcc does have the ability to detect this!
 	 * To get warnings on this, you require to:
 	 * a) use some optimization level besides 0 (-On, n != 0)
@@ -62,10 +62,12 @@ static int umr(void)
 /* The UAR - Use After Return - testcase */
 static void *uar(void)
 {
-	char name[NUM_ALLOC];
+	volatile char name[NUM_ALLOC];
+	volatile int i;
 
-	memset(name, 0, NUM_ALLOC);
-	strncpy(name, "Linux kernel debug", 18);
+	for (i=0; i<NUM_ALLOC-1; i++)
+		name[i] = 'x';
+	name[i] = '\0';
 
 	return name;
 	/*
@@ -93,11 +95,17 @@ static void leak_simple1(void)
  */
 static void *leak_simple2(void)
 {
-	void *q = NULL;
+	volatile char *q = NULL;
+	volatile int i;
+	volatile char heehee[] = "leaky!!";
 
-	q = kzalloc(NUM_ALLOC, GFP_KERNEL);
-	snprintf(q, NUM_ALLOC-1, "%s(): linux kernel debug", __func__);
-	return q;
+#define NUM_ALLOC2	8
+	q = kmalloc(NUM_ALLOC2, GFP_KERNEL);
+	for (i=0; i<NUM_ALLOC2-1; i++)
+			q[i] = heehee[i]; // 'x';
+	q[i] = '\0';
+
+	return (void *)q;
 }
 
 static int __init kmembugs_test_init(void)
