@@ -1,10 +1,34 @@
 #!/bin/bash
 # run
-# Simple bash wrapper to run our custom testcases for KASAN & UBSAN
+# Simple bash wrapper to setup our custom testcases for KASAN & UBSAN
 
 # TODO
 # locate_kernel_config()
 name=$(basename $0)
+
+run_testcases()
+{
+true
+
+}
+
+setup_testmod()
+{
+KMOD=test_kmembugs
+make || return
+[ ! -f ${KMOD}.ko ] && {
+   echo "Module ${KMOD}.ko not built? aborting..."
+   exit 1
+}
+sudo rmmod ${KMOD} 2>/dev/null
+sudo dmesg -C
+sudo insmod ./${KMOD}.ko use_kasan_multishot=${1}
+sudo dmesg
+}
+
+
+#--- 'main' here
+
 echo "Kernel ver: $(uname -r):"
 ubsan=1
 kasan=1
@@ -43,15 +67,6 @@ val=$1
    exit 1
 }
 
-KMOD=test_kmembugs
-make
-[ ! -f ${KMOD}.ko ] && {
-   echo "Module ${KMOD}.ko not built? aborting..."
-   exit 1
-}
-sudo rmmod ${KMOD} 2>/dev/null
-sudo dmesg -C
-sudo insmod ./${KMOD}.ko use_kasan_multishot=${val}
-sudo dmesg
+setup_testmod ${val}
 
 exit 0
