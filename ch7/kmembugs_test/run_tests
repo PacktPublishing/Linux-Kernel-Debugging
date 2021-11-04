@@ -1,57 +1,65 @@
 #!/bin/bash
-# run
+# run_tests
 # Simple bash wrapper to run our custom testcases for KASAN & UBSAN
 
 # TODO
 # locate_kernel_config()
 name=$(basename $0)
-echo "Kernel ver: $(uname -r):"
-ubsan=1
-kasan=1
-KCONF=/boot/config-$(uname -r)
-if ! grep -q "CONFIG_UBSAN=y" ${KCONF}; then
-   echo "UBSAN disabled for this kernel"
-   ubsan=0
-else
-   echo "UBSAN enabled"
-fi
-if ! grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF}; then
-   echo "Generic KASAN disabled for this kernel"
-   kasan=0
-else
-   echo "Generic KASAN enabled"
-fi
-[[ ${ubsan} -eq 0 ]] && [[ ${kasan} -eq 1 ]] && {
-   echo "Both disabled, aborting..."
-   exit 1
-}
-
-if [ $# -ne 1 ]; then
-   echo "
-Usage: ${name} option[0|1]*
-0 : don't enable KASAN-based testing
-1 : enable KASAN-based testing
-
-* This actually determines what value is passed via the module parameter
-  use_kasan_multishot"
-  exit 1
-fi
-val=$1
-
-[[ ${val} -ne 0 ]] && [[ ${val} -ne 1 ]] && {
-   echo "Invalid value ${val} passed; only 0 or 1 is allowed..."
-   exit 1
-}
-
 KMOD=test_kmembugs
-make
-[ ! -f ${KMOD}.ko ] && {
-   echo "Module ${KMOD}.ko not built? aborting..."
-   exit 1
+DBGFS_MNT=/sys/kernel/debug
+
+run_testcases()
+{
+true
+
 }
-sudo rmmod ${KMOD} 2>/dev/null
-sudo dmesg -C
-sudo insmod ./${KMOD}.ko use_kasan_multishot=${val}
-sudo dmesg
+
+
+
+#--- 'main' here
+
+if ! lsmod | grep -q ${KMOD} ; then
+   echo "${name}: load the test module first by running the load_testmod script"
+   exit 1
+fi
+
+[ $(id -u) -ne 0 ] && {
+	echo "${name}: needs root."
+	exit 1
+}
+
+#--- verify debugfs pseudo-file is present
+[ ! -d ${DBGFS_MNT} ] && {
+	echo "${name}: debugfs mount point \"${DBGFS_MNT}\" not present?
+If this is expected, pl fix this script to have the correct location and retry"
+	exit 1
+}
+KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
+[ ! -f ${KMOD_DBGFS_FILE} ] && {
+	echo "${name}: debugfs file \"${KMOD_DBGFS_FILE}\" not present? Aborting..."
+	exit 1
+}
+
+#--- all ok, let's go
+echo "Select testcase to run:
+1. UMR
+2. UAR
+
+Memory leakage
+3.1 simple memory leakage testcase1
+3.2 simple memory leakage testcase2 - caller to free memory
+
+OOB accesses on static (compile-time) global memory
+4.1 
+
+(Type in the testcase number): "
+read testcase
+
+# validate
+
+echo "Running testcase \"${testcase}\" via test module now..."
+dmesg -C
+echo "${testcase}" > ${KMOD_DBGFS_FILE}
+dmesg
 
 exit 0

@@ -1,0 +1,57 @@
+#!/bin/bash
+# run
+# Simple bash wrapper to run our custom testcases for KASAN & UBSAN
+
+# TODO
+# locate_kernel_config()
+name=$(basename $0)
+echo "Kernel ver: $(uname -r):"
+ubsan=1
+kasan=1
+KCONF=/boot/config-$(uname -r)
+if ! grep -q "CONFIG_UBSAN=y" ${KCONF}; then
+   echo "UBSAN disabled for this kernel"
+   ubsan=0
+else
+   echo "UBSAN enabled"
+fi
+if ! grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF}; then
+   echo "Generic KASAN disabled for this kernel"
+   kasan=0
+else
+   echo "Generic KASAN enabled"
+fi
+[[ ${ubsan} -eq 0 ]] && [[ ${kasan} -eq 1 ]] && {
+   echo "Both disabled, aborting..."
+   exit 1
+}
+
+if [ $# -ne 1 ]; then
+   echo "
+Usage: ${name} option[0|1]*
+0 : don't enable KASAN-based testing
+1 : enable KASAN-based testing
+
+* This actually determines what value is passed via the module parameter
+  use_kasan_multishot"
+  exit 1
+fi
+val=$1
+
+[[ ${val} -ne 0 ]] && [[ ${val} -ne 1 ]] && {
+   echo "Invalid value ${val} passed; only 0 or 1 is allowed..."
+   exit 1
+}
+
+KMOD=test_kmembugs
+make
+[ ! -f ${KMOD}.ko ] && {
+   echo "Module ${KMOD}.ko not built? aborting..."
+   exit 1
+}
+sudo rmmod ${KMOD} 2>/dev/null
+sudo dmesg -C
+sudo insmod ./${KMOD}.ko use_kasan_multishot=${val}
+sudo dmesg
+
+exit 0
