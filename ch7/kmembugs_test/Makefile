@@ -61,7 +61,10 @@ CC     := $(CROSS_COMPILE)gcc
 #CC := clang
 
 PWD            := $(shell pwd)
-obj-m          += ${FNAME_C}.o
+# Special case here: we have 2 source files; compile and then link them into
+# one .ko
+obj-m          += test_kmembugs.o
+test_kmembugs-objs := ${FNAME_C}.o debugfs_kmembugs.o
 
 #--- Debug or production mode?
 # Set the MYDEBUG variable accordingly to y/n resp.
@@ -73,7 +76,7 @@ obj-m          += ${FNAME_C}.o
 # generation of debug symbols, if so required. Also, realize that the DEBUG
 # macro is turned on by many CONFIG_*DEBUG* options; hence, we use a different
 # macro var name, MYDEBUG).
-MYDEBUG := n
+MYDEBUG := y
 ifeq (${MYDEBUG}, y)
 
 # https://www.kernel.org/doc/html/latest/kbuild/makefiles.html#compilation-flags
@@ -101,7 +104,7 @@ all:
 	@${CC} --version|head -n1
 	@echo
 	make -C $(KDIR) M=$(PWD) modules
-	$(shell [ "${MYDEBUG}" != "y" ] && ${STRIP} --strip-debug ./${FNAME_C}.ko)
+	$(shell if [ -f ${FNAME_C}.ko -a "${MYDEBUG}" != "y" ] ; then ${STRIP} --strip-debug ./${FNAME_C}.ko; fi)
 install:
 	@echo
 	@echo "--- installing ---"
@@ -111,7 +114,7 @@ install:
 	@echo " [Now for the 'sudo make install' ]"
 	sudo make -C $(KDIR) M=$(PWD) modules_install
 	@echo " [If !debug, stripping debug info from ${KMODDIR}/extra/${FNAME_C}.ko]"
-	$(shell if [ "${MYDEBUG}" != "y" ]; then sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
+	$(shell if [ -f ${KMODDIR}/extra/${FNAME_C}.ko -a "${MYDEBUG}" != "y" ]; then sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
 clean:
 	@echo
 	@echo "--- cleaning ---"
