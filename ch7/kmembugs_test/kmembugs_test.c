@@ -49,6 +49,12 @@ static bool kasan_multishot;
 int debugfs_simple_intf_init(void);
 extern struct dentry *gparent;
 
+/*
+ * All testcase functions are below:
+ * they're deliberately _not_ marked with the static qualifier so that they're
+ * accessible from the debugfs source file...
+ */
+
 /* The UMR - Uninitialized Memory Read - testcase */
 int umr(void)
 {
@@ -71,7 +77,7 @@ int umr(void)
 }
 
 /* The UAR - Use After Return - testcase */
-static void *uar(void)
+void *uar(void)
 {
 #define NUM_ALLOC  64
 	volatile char name[NUM_ALLOC];
@@ -91,10 +97,11 @@ static void *uar(void)
 }
 
 /* A simple memory leakage testcase 1 */
-static void leak_simple1(void)
+void leak_simple1(void)
 {
 	char *p = NULL;
 
+	pr_info("testcase 3.1: simple memory leak testcase 1\n");
 	p = kzalloc(1520, GFP_KERNEL);
 	if (unlikely(!p))
 		return;
@@ -106,12 +113,13 @@ static void leak_simple1(void)
 /* A simple memory leakage testcase 2.
  * The caller's to free the memory...
  */
-static void *leak_simple2(void)
+void *leak_simple2(void)
 {
 	volatile char *q = NULL;
 	volatile int i;
 	volatile char heehee[] = "leaky!!";
 
+	pr_info("testcase 3.2: simple memory leak testcase 2\n");
 #define NUM_ALLOC2	8
 	q = kmalloc(NUM_ALLOC2, GFP_KERNEL);
 	for (i = 0; i < NUM_ALLOC2 - 1; i++)
@@ -154,7 +162,7 @@ static char global_arr[8];
  * OOB on static (compile-time) mem: OOB read/write (right) overflow
  * Covers both read/write overflow on both static global and local/stack memory
  */
-static int static_mem_oob_right(int mode)
+int static_mem_oob_right(int mode)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
@@ -189,7 +197,7 @@ static int static_mem_oob_right(int mode)
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
  * Covers both read/write overflow on both static global and local/stack memory
  */
-static int static_mem_oob_left(int mode)
+int static_mem_oob_left(int mode)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
@@ -206,14 +214,20 @@ static int static_mem_oob_left(int mode)
 		 *  142 |  x = arr[20]; // valid and within bounds
 		 *      |      ~~~^~~~
 		 */
-		pr_info("global mem: w=0x%x x=0x%x; local mem: y=0x%x z=0x%x\n", w, x, y, z);
+	//	pr_info("global mem: w=0x%x x=0x%x; local mem: y=0x%x z=0x%x\n", w, x, y, z);
+	} else if (mode == WRITE) {
+		global_arr[-2] = 'w'; // invalid, not within bounds
+		global_arr[2] = 'x';  // valid, within bounds
+
+		local_arr[-5] = 'y';  // invalid, not within bounds and random!
+		local_arr[5] = 'z';	  // valid, within bounds but random
 	}
 
 	return 0;
 }
 
 // dynamic mem: OOB read/write overflow
-static int dynamic_mem_oob_right(int mode)
+int dynamic_mem_oob_right(int mode)
 {
 	volatile char *kptr, ch = 0;
 	size_t sz = 123;
@@ -263,7 +277,7 @@ static int __init kmembugs_test_init(void)
 
 	return 0;		/* success */
 
-
+#if 0
 	for (i = 0; i < numtimes; i++) {
 		int umr_ret;
 		char *res1 = NULL, *res2 = NULL;
@@ -313,6 +327,7 @@ static int __init kmembugs_test_init(void)
 	}
 
 	return 0;		/* success */
+#endif
 }
 
 static void __exit kmembugs_test_exit(void)
