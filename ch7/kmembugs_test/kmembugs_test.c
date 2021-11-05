@@ -214,7 +214,6 @@ int static_mem_oob_left(int mode)
 		 *  142 |  x = arr[20]; // valid and within bounds
 		 *      |      ~~~^~~~
 		 */
-	//	pr_info("global mem: w=0x%x x=0x%x; local mem: y=0x%x z=0x%x\n", w, x, y, z);
 	} else if (mode == WRITE) {
 		global_arr[-2] = 'w'; // invalid, not within bounds
 		global_arr[2] = 'x';  // valid, within bounds
@@ -226,7 +225,7 @@ int static_mem_oob_left(int mode)
 	return 0;
 }
 
-// dynamic mem: OOB read/write overflow
+/* OOB on dynamic (kmalloc-ed) mem: OOB read/write (right) overflow */
 int dynamic_mem_oob_right(int mode)
 {
 	volatile char *kptr, ch = 0;
@@ -244,6 +243,27 @@ int dynamic_mem_oob_right(int mode)
 	kfree((char *)kptr);
 	return 0;
 }
+
+/* OOB on dynamic (kmalloc-ed) mem: OOB read/write (left) underflow */
+int dynamic_mem_oob_left(int mode)
+{
+	volatile char *kptr, *ptr, ch = 'x';
+	size_t sz = 123;
+
+	kptr = (char *)kmalloc(sz, GFP_KERNEL);
+	if (!kptr)
+		return -ENOMEM;
+	ptr = kptr - 1;
+
+	if (mode == READ)
+		ch = *(volatile char *)ptr;
+	else if (mode == WRITE)
+		*(volatile char *)ptr = ch;
+
+	kfree((char *)kptr);
+	return 0;
+}
+
 
 static int __init kmembugs_test_init(void)
 {
@@ -270,10 +290,6 @@ static int __init kmembugs_test_init(void)
 	stat = debugfs_simple_intf_init();
 	if (stat < 0)
 		return stat;
-
-
-
-
 
 	return 0;		/* success */
 

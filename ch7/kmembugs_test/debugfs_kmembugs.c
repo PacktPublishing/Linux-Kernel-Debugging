@@ -20,14 +20,15 @@ void *uar(void);
 
 int static_mem_oob_right(int mode);
 int static_mem_oob_left(int mode);
-//int dynamic_mem_oob_right(int mode);
+int dynamic_mem_oob_right(int mode);
+int dynamic_mem_oob_left(int mode);
 
 void leak_simple1(void);
 void *leak_simple2(void);
 
 struct dentry *gparent;
 
-#define MAXUPASS 4 // careful- k stack is small!
+#define MAXUPASS 4
 static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count, loff_t *fpos)
 {
 	char udata[MAXUPASS];
@@ -40,7 +41,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	if (copy_from_user(udata, ubuf, count))
 		return -EIO;
 	udata[count-1]='\0';
-	pr_debug("user passed %zu bytes: %s\n", count, udata);
+	pr_debug("testcase to run: %s\n", udata);
 
 	/* 
 	 * Now udata contains the data passed from userspace - the testcase # to run
@@ -68,7 +69,6 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		static_mem_oob_left(READ);
 	else if (!strncmp(udata, "4.4", 4))
 		static_mem_oob_left(WRITE);
-	/*
 	else if (!strncmp(udata, "5.1", 4))
 		dynamic_mem_oob_right(READ);
 	else if (!strncmp(udata, "5.2", 4))
@@ -77,6 +77,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		dynamic_mem_oob_left(READ);
 	else if (!strncmp(udata, "5.4", 4))
 		dynamic_mem_oob_left(WRITE);
+	/*
 	else if (!strncmp(udata, "6", 2))
 		double_free();
 	*/
