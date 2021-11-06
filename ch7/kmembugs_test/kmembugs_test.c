@@ -11,9 +11,16 @@
  * From: Ch 7: Debugging kernel memory issues
  ****************************************************************
  * Brief Description:
+ * kmembugs_test.c: this source file:
  * This kernel module has buggy functions, each of which represents a simple
- * test case. They're deliberately selected to be the ones that are typically
- * NOT caught by KASAN!
+ * test case. Some of them are deliberately selected to be ones that are
+ * typically NOT caught by KASAN!
+ *
+ * debugfs_kmembugs.c:
+ * Source for the debugfs file - typically
+ *  /sys/kernel/debug/test_kmembugs/lkd_dbgfs_run_testcase
+ * Used to execute individual testcases by writing the testcase # (as a string)
+ * to this pseudo-file.
  *
  * IMP:
  * By default, KASAN will turn off reporting after the very first error
@@ -38,10 +45,11 @@ MODULE_DESCRIPTION("kmembugs_test: a few additional test cases for KASAN/UBSAN")
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
+/*
 static bool use_kasan_multishot;
 module_param(use_kasan_multishot, bool, 0);
 MODULE_PARM_DESC(use_kasan_multishot, "Set to 1 to run test cases for KASAN (default=0)");
-
+*/
 #ifdef CONFIG_KASAN
 static bool kasan_multishot;
 #endif
@@ -129,30 +137,6 @@ void *leak_simple2(void)
 	return (void *)q;
 }
 
-#if 0
-#define NUM_ALLOC3	42
-static int oob_array_dynmem(void)
-{
-	volatile char *arr, x, y;
-
-	arr = kmalloc(NUM_ALLOC3, GFP_KERNEL);
-	if (!arr)
-		return -ENOMEM;
-
-	pr_info("Allocated %d bytes via kmalloc(), *actual amt* alloc'ed is %ld bytes\n",
-		NUM_ALLOC3, ksize((char *)arr));
-	x = arr[40];		// valid and within bounds
-	y = arr[50];		// valid but NOT within bounds
-	/* hey, there's also a lurking UMR defect here! arr[] has random content;
-	 * Neither KASAN/UBSAN nor the compiler catches it...
-	 */
-	pr_info("x=0x%x y=0x%x\n", x, y);
-
-	kfree((char *)arr);
-	return 0;
-}
-#endif
-
 #define READ	0
 #define WRITE	1
 
@@ -193,13 +177,14 @@ int static_mem_oob_right(int mode)
 	return 0;
 }
 
+/********* TODO / RELOOK : KASAN isn't catching this !!! **************/
 int static_mem_oob_left2(int mode)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
-	char *volatile ptr = global_arr;
+	volatile char *ptr = global_arr;
 
-	memset(ptr, 0x0, 10); //ARRAY_SIZE(global_arr));
+	memset((char *)ptr, 0x0, 10); //ARRAY_SIZE(global_arr));
 	pr_info("global_arr=%px ptr=%px\n", global_arr, ptr);
 	ptr = ptr - 16384;
 	pr_info("ptr=%px\n", ptr);
@@ -210,7 +195,8 @@ int static_mem_oob_left2(int mode)
 	}
 	else if (mode == WRITE)
 		*(volatile char *)ptr = 'x';
-	return 0;
+//	return 0;
+
 
 	if (mode == READ) {
 		w = global_arr[-2];	// invalid, not within bounds
@@ -238,6 +224,7 @@ int static_mem_oob_left2(int mode)
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
  * Covers both read/write overflow on both static global and local/stack memory
  */
+/********* TODO / RELOOK : KASAN isn't catching this !!! **************/
 int static_mem_oob_left(int mode)
 {
 	volatile char w, x, y, z;
@@ -302,6 +289,44 @@ int dynamic_mem_oob_left(int mode)
 		*(volatile char *)ptr = ch;
 
 	kfree((char *)kptr);
+	return 0;
+}
+
+/* Use After Free - UAF - defect testcase */
+int uaf(void)
+{
+	volatile char *kptr, *ptr;
+	size_t sz = 123;
+
+	kptr = (char *)kmalloc(sz, GFP_KERNEL);
+	if (!kptr)
+		return -ENOMEM;
+	ptr = kptr + 3;
+
+	*(volatile char *)ptr = 'x';
+	kfree((char *)kptr);
+	ptr = kptr + 8;
+	*(volatile char *)ptr = 'y'; // the bug
+
+	return 0;
+}
+
+/* Double free defect testcase */
+int double_free(void)
+{
+	volatile char *kptr, *ptr;
+	size_t sz = 123;
+
+	kptr = (char *)kmalloc(sz, GFP_KERNEL);
+	if (!kptr)
+		return -ENOMEM;
+	ptr = kptr + 3;
+
+	*(volatile char *)ptr = 'x';
+	kfree((char *)kptr);
+	if (1)	// the bug
+		kfree((char *)kptr);
+
 	return 0;
 }
 

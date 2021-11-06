@@ -1,5 +1,37 @@
-
-
+/*
+ * ch7/kmembugs_test/debugfs_kmembugs.c
+ ***************************************************************
+ * This program is part of the source code released for the book
+ *  "Linux Kernel Debugging"
+ *  (c) Author: Kaiwan N Billimoria
+ *  Publisher:  Packt
+ *  GitHub repository:
+ *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
+ *
+ * From: Ch 7: Debugging kernel memory issues
+ ****************************************************************
+ * Brief Description:
+ * kmembugs_test.c:
+ * This kernel module has buggy functions, each of which represents a simple
+ * test case. Some of them are deliberately selected to be ones that are
+ * typically NOT caught by KASAN!
+ *
+ * debugfs_kmembugs.c: this source file:
+ * Source for the debugfs file - typically
+ *  /sys/kernel/debug/test_kmembugs/lkd_dbgfs_run_testcase
+ * Used to execute individual testcases by writing the testcase # (as a string)
+ * to this pseudo-file.
+ *
+ * IMP:
+ * By default, KASAN will turn off reporting after the very first error
+ * encountered; we can change this behavior (and therefore test more easily)
+ * by passing the kernel parameter kasan_multi_shot. Even easier, we can simply
+ * first invoke the function kasan_save_enable_multi_shot() - which has the
+ * same effect - and on unload restore it by invoking the
+ * kasan_restore_multi_shot()! (note they require GPL licensing!).
+ *
+ * For details, please refer the book, Ch 7.
+ */
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -16,7 +48,8 @@
 // The testcase function prototypes, in order
 int umr(void);
 void *uar(void);
-//void *uaf(void);
+void leak_simple1(void);
+void *leak_simple2(void);
 
 int static_mem_oob_right(int mode);
 int static_mem_oob_left(int mode);
@@ -24,8 +57,8 @@ int static_mem_oob_left2(int mode);
 int dynamic_mem_oob_right(int mode);
 int dynamic_mem_oob_left(int mode);
 
-void leak_simple1(void);
-void *leak_simple2(void);
+int uaf(void);
+int double_free(void);
 
 struct dentry *gparent;
 
@@ -80,10 +113,10 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		dynamic_mem_oob_left(READ);
 	else if (!strncmp(udata, "5.4", 4))
 		dynamic_mem_oob_left(WRITE);
-	/*
 	else if (!strncmp(udata, "6", 2))
+		uaf();
+	else if (!strncmp(udata, "7", 2))
 		double_free();
-	*/
 	else
 		pr_warn("Invalid testcase # (%s) passed\n", udata);
 

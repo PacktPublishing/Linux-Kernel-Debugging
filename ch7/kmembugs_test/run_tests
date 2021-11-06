@@ -2,21 +2,23 @@
 # run_tests
 # Simple bash wrapper to run our custom testcases for KASAN & UBSAN
 
-# TODO
-# locate_kernel_config()
 name=$(basename $0)
 KMOD=test_kmembugs
 DBGFS_MNT=/sys/kernel/debug
 
-run_testcases()
-{
-true
+# TODO
+# locate_kernel_config()
+KCONF=/boot/config-$(uname -r)
 
+show_curr_config()
+{
+echo -n "Generic KASAN: "
+grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF} && echo "enabled" || echo "disabled"
+echo -n "        UBSAN: "
+grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
+echo
 }
 
-
-
-#--- 'main' here
 
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
@@ -29,6 +31,10 @@ fi
 }
 
 #--- verify debugfs pseudo-file is present
+if grep -q "CONFIG_DEBUG_FS_DISALLOW_MOUNT=y" ${KCONF} ; then
+    echo "${name}: debugfs mount invisible (CONFIG_DEBUG_FS_DISALLOW_MOUNT=y), can't proceed."
+	exit 1 
+fi
 [ ! -d ${DBGFS_MNT} ] && {
 	echo "${name}: debugfs mount point \"${DBGFS_MNT}\" not present?
 If this is expected, pl fix this script to have the correct location and retry"
@@ -39,6 +45,10 @@ KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
 	echo "${name}: debugfs file \"${KMOD_DBGFS_FILE}\" not present? Aborting..."
 	exit 1
 }
+echo "Debugfs file: ${KMOD_DBGFS_FILE}
+"
+
+show_curr_config
 
 #--- all ok, let's go
 echo "Select testcase to run:
@@ -61,10 +71,15 @@ OOB accesses on dynamic (kmalloc-ed) memory
 5.3  Read  (left) underflow
 5.4  Write (left) underflow
 
+6  Use After Free - UAF
+7  Double-free
+
 (Type in the testcase number to run): "
 read testcase
-
-# validate
+if [ ${testcase} -le 0 -o ${testcase} -gt 7 ]; then
+   echo "${name}: invalid testcase #"
+   exit 1
+fi
 
 echo "Running testcase \"${testcase}\" via test module now..."
 dmesg -C
