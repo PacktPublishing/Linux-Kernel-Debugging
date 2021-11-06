@@ -20,6 +20,7 @@ void *uar(void);
 
 int static_mem_oob_right(int mode);
 int static_mem_oob_left(int mode);
+int static_mem_oob_left2(int mode);
 int dynamic_mem_oob_right(int mode);
 int dynamic_mem_oob_left(int mode);
 
@@ -66,9 +67,11 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	else if (!strncmp(udata, "4.2", 4))
 		static_mem_oob_right(WRITE);
 	else if (!strncmp(udata, "4.3", 4))
-		static_mem_oob_left(READ);
+		static_mem_oob_left2(READ);
+		//static_mem_oob_left(READ);
 	else if (!strncmp(udata, "4.4", 4))
-		static_mem_oob_left(WRITE);
+		static_mem_oob_left2(WRITE);
+		//static_mem_oob_left(WRITE);
 	else if (!strncmp(udata, "5.1", 4))
 		dynamic_mem_oob_right(READ);
 	else if (!strncmp(udata, "5.2", 4))

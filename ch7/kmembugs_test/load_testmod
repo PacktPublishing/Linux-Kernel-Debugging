@@ -1,16 +1,10 @@
 #!/bin/bash
-# run
+# load_testmod
 # Simple bash wrapper to setup our custom testcases for KASAN & UBSAN
 
 # TODO
 # locate_kernel_config()
 name=$(basename $0)
-
-run_testcases()
-{
-true
-
-}
 
 setup_testmod()
 {
@@ -29,7 +23,7 @@ sudo dmesg
 
 #--- 'main' here
 
-echo "Kernel ver: $(uname -r):"
+echo "Kernel ver: $(uname -r)"
 ubsan=1
 kasan=1
 KCONF=/boot/config-$(uname -r)
@@ -45,10 +39,16 @@ if ! grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF}; then
 else
    echo "Generic KASAN enabled"
 fi
-[[ ${ubsan} -eq 0 ]] && [[ ${kasan} -eq 1 ]] && {
-   echo "Both disabled, aborting..."
+[[ ${ubsan} -eq 0 ]] && [[ ${kasan} -eq 0 ]] && {
+   echo "Both KASAN and UBSAN are disabled for this kernel, aborting..."
    exit 1
 }
+val=0
+[ ${kasan} -eq 1 ] && val=1
+setup_testmod ${val}
+exit 0
+
+
 
 if [ $# -ne 1 ]; then
    echo "

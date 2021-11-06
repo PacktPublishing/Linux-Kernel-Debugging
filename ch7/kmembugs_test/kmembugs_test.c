@@ -156,7 +156,7 @@ static int oob_array_dynmem(void)
 #define READ	0
 #define WRITE	1
 
-static char global_arr[8];
+static char global_arr[10];
 
 /*
  * OOB on static (compile-time) mem: OOB read/write (right) overflow
@@ -193,6 +193,47 @@ int static_mem_oob_right(int mode)
 	return 0;
 }
 
+int static_mem_oob_left2(int mode)
+{
+	volatile char w, x, y, z;
+	volatile char local_arr[20];
+	char *volatile ptr = global_arr;
+
+	memset(ptr, 0x0, 10); //ARRAY_SIZE(global_arr));
+	pr_info("global_arr=%px ptr=%px\n", global_arr, ptr);
+	ptr = ptr - 16384;
+	pr_info("ptr=%px\n", ptr);
+
+	if (mode == READ) {
+		w = *(volatile char *)ptr;
+		pr_info("w=0x%x\n", w);
+	}
+	else if (mode == WRITE)
+		*(volatile char *)ptr = 'x';
+	return 0;
+
+	if (mode == READ) {
+		w = global_arr[-2];	// invalid, not within bounds
+		x = global_arr[2];	// valid, within bounds
+
+		y = local_arr[-5];	// invalid, not within bounds and random!
+		z = local_arr[5];	// valid, within bounds but random
+		/* hey, there's also a lurking UMR defect here! local_arr[] has random content;
+		 * KASAN/UBSAN don't seem to catch it; the compiler does! via a warning:
+		 *  [...]warning: 'arr[20]' is used uninitialized in this function [-Wuninitialized]
+		 *  142 |  x = arr[20]; // valid and within bounds
+		 *      |      ~~~^~~~
+		 */
+	} else if (mode == WRITE) {
+		global_arr[-2] = 'w'; // invalid, not within bounds
+		global_arr[2] = 'x';  // valid, within bounds
+
+		local_arr[-5] = 'y';  // invalid, not within bounds and random!
+		local_arr[5] = 'z';	  // valid, within bounds but random
+	}
+
+	return 0;
+}
 /*
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
  * Covers both read/write overflow on both static global and local/stack memory
@@ -267,11 +308,9 @@ int dynamic_mem_oob_left(int mode)
 
 static int __init kmembugs_test_init(void)
 {
-	int i, stat, numtimes = 1;	// would you like to try a number of times? :)
+	int stat;
 
-	pr_info("Testing for ");
-	if (use_kasan_multishot) {
-		pr_info("KASAN\n");
+	pr_info("Testing via ");
 		/*
 		 * Realize that the kasan_save_enable_multi_shot() / kasan_restore_multi_shot()
 		 * pair of functions work only on a kernel that has CONFIG_KASAN=y. Also,
@@ -279,13 +318,15 @@ static int __init kmembugs_test_init(void)
 		 */
 #ifdef CONFIG_KASAN_GENERIC
 		kasan_multishot = kasan_save_enable_multi_shot();
+		pr_info("KASAN");
 #else
 		pr_warn("Attempting to test for KASAN on a non-KASAN-enabled kernel!\n");
-		return -EINVAL;
+//		return -EINVAL;
 #endif
-	}
 	if (IS_ENABLED(CONFIG_UBSAN))
-		pr_info("UBSAN\n");
+		pr_info("|UBSAN\n");
+	else
+		pr_info("\n");
 
 	stat = debugfs_simple_intf_init();
 	if (stat < 0)
@@ -349,8 +390,7 @@ static int __init kmembugs_test_init(void)
 static void __exit kmembugs_test_exit(void)
 {
 #ifdef CONFIG_KASAN_GENERIC
-	if (use_kasan_multishot)
-		kasan_restore_multi_shot(kasan_multishot);
+	kasan_restore_multi_shot(kasan_multishot);
 #endif
 	debugfs_remove_recursive(gparent);
 	pr_info("removed\n");
