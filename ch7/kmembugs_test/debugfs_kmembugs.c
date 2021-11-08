@@ -45,21 +45,32 @@
 #include <asm/uaccess.h>
 #endif
 
-// The testcase function prototypes, in order
-int umr(void);
-void *uar(void);
-void leak_simple1(void);
-void *leak_simple2(void);
+//----------------- The testcase function prototypes, in order
+int umr(void); // testcase 1
+void *uar(void); // testcase 2
+void leak_simple1(void); // testcase 3.1
+void *leak_simple2(void); // testcase 3.2
 
-int static_mem_oob_right(int mode);
-int static_mem_oob_left(int mode);
-int static_mem_oob_left2(int mode);
-int dynamic_mem_oob_right(int mode);
-int dynamic_mem_oob_left(int mode);
+int static_mem_oob_right(int mode); // testcase 4.1/5.1
+int static_mem_oob_left(int mode); // testcase 4.2/5.2
+int static_mem_oob_left2(int mode); // testcase 4.2/5.2
+int dynamic_mem_oob_right(int mode); // testcase 4.3/5.3
+int dynamic_mem_oob_left(int mode); // testcase 4.4/5.4
 
-int uaf(void);
-int double_free(void);
+int uaf(void); // testcase 6
+int double_free(void); // testcase 7
 
+void test_ubsan_add_overflow(void);
+void test_ubsan_sub_overflow(void);
+void test_ubsan_mul_overflow(void);
+void test_ubsan_negate_overflow(void);
+void test_ubsan_divrem_overflow(void);
+void test_ubsan_shift_out_of_bounds(void);
+void test_ubsan_out_of_bounds(void);
+void test_ubsan_load_invalid_value(void);
+void test_ubsan_misaligned_access(void);
+void test_ubsan_object_size_mismatch(void);
+//----------------------------------------------
 struct dentry *gparent;
 
 #define MAXUPASS 4
@@ -117,6 +128,26 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		uaf();
 	else if (!strncmp(udata, "7", 2))
 		double_free();
+	else if (!strncmp(udata, "8.1", 4))
+		test_ubsan_add_overflow();
+	else if (!strncmp(udata, "8.2", 4))
+		test_ubsan_sub_overflow();
+	else if (!strncmp(udata, "8.3", 4))
+		test_ubsan_mul_overflow();
+	else if (!strncmp(udata, "8.4", 4))
+		test_ubsan_negate_overflow();
+	else if (!strncmp(udata, "8.4", 4))
+		test_ubsan_divrem_overflow();
+	else if (!strncmp(udata, "8.5", 4))
+	    test_ubsan_shift_out_of_bounds();
+	else if (!strncmp(udata, "8.6", 4))
+		test_ubsan_out_of_bounds();
+	else if (!strncmp(udata, "8.7", 4))
+		test_ubsan_load_invalid_value();
+	else if (!strncmp(udata, "8.8", 4))
+		test_ubsan_misaligned_access();
+	else if (!strncmp(udata, "8.9", 4))
+		test_ubsan_object_size_mismatch();
 	else
 		pr_warn("Invalid testcase # (%s) passed\n", udata);
 
@@ -124,7 +155,6 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 }
 
 static struct file_operations dbgfs_fops = {
-	//.read = dbgfs_genread,
 	.write = dbgfs_run_testcase,
 };
 

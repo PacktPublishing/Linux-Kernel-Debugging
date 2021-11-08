@@ -74,10 +74,24 @@ OOB accesses on dynamic (kmalloc-ed) memory
 6  Use After Free - UAF
 7  Double-free
 
+UBSAN arithmetic UB testcases
+8.1  add overflow
+8.2  sub overflow
+8.3  mul overflow
+8.4  negate overflow
+8.5  shift OOB
+8.6  OOB
+8.7  load invalid value
+8.8  misaligned access
+8.9  object size mismatch
+
 (Type in the testcase number to run): "
 read testcase
-if [ ${testcase} -le 0 -o ${testcase} -gt 7 ]; then
-   echo "${name}: invalid testcase #"
+pretend_int_tc=${testcase}
+[ ${#testcase} -eq 3 ] && pretend_int_tc=${testcase::-2}
+#echo "pretend_int_tc=${pretend_int_tc}"
+if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt 8 ]; then
+   echo "${name}: invalid testcase # (${testcase})"
    exit 1
 fi
 

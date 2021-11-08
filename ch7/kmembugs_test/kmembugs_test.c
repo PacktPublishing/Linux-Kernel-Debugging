@@ -330,6 +330,121 @@ int double_free(void)
 	return 0;
 }
 
+/*------------------ UBSAN Arithmetic UB testcases ----------------------------
+ * All copied verbatim from the kernel src tree here:
+ *  lib/test_ubsan.c
+No CONFIG_UBSAN_TRAP=y:
+doesn't catch - except for div by 0...  ??
+sz:
+$ l arch/x86/boot/bzImage
+-rw-r--r-- 1 letsdebug letsdebug 18M Nov  6 19:34 arch/x86/boot/bzImage
+$ l vmlinux
+-rwxr-xr-x 1 letsdebug letsdebug 1.1G Nov  6 19:34 vmlinux*
+$
+
+With CONFIG_UBSAN_TRAP=y ? No...
+
+sz:
+$ l arch/x86/boot/bzImage
+-rw-r--r-- 1 letsdebug letsdebug 17M Nov  7 17:14 arch/x86/boot/bzImage
+$ l vmlinux
+-rwxr-xr-x 1 letsdebug letsdebug 1017M Nov  7 17:14 vmlinux*
+$
+ */
+void test_ubsan_add_overflow(void)
+{
+    volatile int val = INT_MAX;
+
+    val += 2;
+}
+
+void test_ubsan_sub_overflow(void)
+{
+    volatile int val = INT_MIN;
+    volatile int val2 = 2;
+
+    val -= val2;
+}
+
+void test_ubsan_mul_overflow(void)
+{
+    volatile int val = INT_MAX / 2;
+
+    val *= 3;
+}
+
+void test_ubsan_negate_overflow(void)
+{
+    volatile int val = INT_MIN;
+
+    val = -val;
+}
+
+void test_ubsan_divrem_overflow(void)
+{
+    volatile int val = 16;
+    volatile int val2 = 0;
+
+    val /= val2;
+}
+
+void test_ubsan_shift_out_of_bounds(void)
+{
+    volatile int val = -1;
+    int val2 = 10;
+
+    val2 <<= val;
+}
+
+void test_ubsan_out_of_bounds(void)
+{
+    volatile int i = 4, j = 5;
+    volatile int arr[4];
+
+    arr[j] = i;
+}
+
+void test_ubsan_load_invalid_value(void)
+{
+    volatile char *dst, *src;
+    bool val, val2, *ptr;
+    char c = 4;
+
+    dst = (char *)&val;
+    src = &c;
+    *dst = *src;
+
+    ptr = &val2;
+    val2 = val;
+}
+
+void test_ubsan_null_ptr_deref(void)
+{
+    volatile int *ptr = NULL;
+    int val;
+
+    val = *ptr;
+}
+
+void test_ubsan_misaligned_access(void)
+{
+    volatile char arr[5] __aligned(4) = {1, 2, 3, 4, 5};
+    volatile int *ptr, val = 6;
+
+    ptr = (int *)(arr + 1);
+    *ptr = val;
+}
+
+void test_ubsan_object_size_mismatch(void)
+{
+    /* "((aligned(8)))" helps this not into be misaligned for ptr-access. */
+    volatile int val __aligned(8) = 4;
+    volatile long long *ptr, val2;
+
+    ptr = (long long *)&val;
+    val2 = *ptr;
+}
+
 
 static int __init kmembugs_test_init(void)
 {
@@ -343,13 +458,13 @@ static int __init kmembugs_test_init(void)
 		 */
 #ifdef CONFIG_KASAN_GENERIC
 		kasan_multishot = kasan_save_enable_multi_shot();
-		pr_info("KASAN");
+		pr_info("KASAN configured\n");
 #else
 		pr_warn("Attempting to test for KASAN on a non-KASAN-enabled kernel!\n");
 //		return -EINVAL;
 #endif
 	if (IS_ENABLED(CONFIG_UBSAN))
-		pr_info("|UBSAN\n");
+		pr_info("UBSAN configured\n");
 	else
 		pr_info("\n");
 
