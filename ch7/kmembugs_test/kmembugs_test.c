@@ -140,6 +140,7 @@ void *leak_simple2(void)
 #define READ	0
 #define WRITE	1
 
+/********* TODO / RELOOK : KASAN isn't catching static global mem OOB !!! **************/
 static char global_arr[10];
 
 /*
@@ -177,54 +178,10 @@ int static_mem_oob_right(int mode)
 	return 0;
 }
 
-/********* TODO / RELOOK : KASAN isn't catching this !!! **************/
-int static_mem_oob_left2(int mode)
-{
-	volatile char w, x, y, z;
-	volatile char local_arr[20];
-	volatile char *ptr = global_arr;
-
-	memset((char *)ptr, 0x0, 10); //ARRAY_SIZE(global_arr));
-	pr_info("global_arr=%px ptr=%px\n", global_arr, ptr);
-	ptr = ptr - 16384;
-	pr_info("ptr=%px\n", ptr);
-
-	if (mode == READ) {
-		w = *(volatile char *)ptr;
-		pr_info("w=0x%x\n", w);
-	}
-	else if (mode == WRITE)
-		*(volatile char *)ptr = 'x';
-//	return 0;
-
-
-	if (mode == READ) {
-		w = global_arr[-2];	// invalid, not within bounds
-		x = global_arr[2];	// valid, within bounds
-
-		y = local_arr[-5];	// invalid, not within bounds and random!
-		z = local_arr[5];	// valid, within bounds but random
-		/* hey, there's also a lurking UMR defect here! local_arr[] has random content;
-		 * KASAN/UBSAN don't seem to catch it; the compiler does! via a warning:
-		 *  [...]warning: 'arr[20]' is used uninitialized in this function [-Wuninitialized]
-		 *  142 |  x = arr[20]; // valid and within bounds
-		 *      |      ~~~^~~~
-		 */
-	} else if (mode == WRITE) {
-		global_arr[-2] = 'w'; // invalid, not within bounds
-		global_arr[2] = 'x';  // valid, within bounds
-
-		local_arr[-5] = 'y';  // invalid, not within bounds and random!
-		local_arr[5] = 'z';	  // valid, within bounds but random
-	}
-
-	return 0;
-}
 /*
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
  * Covers both read/write overflow on both static global and local/stack memory
  */
-/********* TODO / RELOOK : KASAN isn't catching this !!! **************/
 int static_mem_oob_left(int mode)
 {
 	volatile char w, x, y, z;
@@ -235,7 +192,7 @@ int static_mem_oob_left(int mode)
 		x = global_arr[2];	// valid, within bounds
 
 		y = local_arr[-5];	// invalid, not within bounds and random!
-		z = local_arr[5];	// valid, within bounds but random
+		z = local_arr[5];	// valid, within bounds but random content
 		/* hey, there's also a lurking UMR defect here! local_arr[] has random content;
 		 * KASAN/UBSAN don't seem to catch it; the compiler does! via a warning:
 		 *  [...]warning: 'arr[20]' is used uninitialized in this function [-Wuninitialized]
@@ -247,7 +204,7 @@ int static_mem_oob_left(int mode)
 		global_arr[2] = 'x';  // valid, within bounds
 
 		local_arr[-5] = 'y';  // invalid, not within bounds and random!
-		local_arr[5] = 'z';	  // valid, within bounds but random
+		local_arr[5] = 'z';	  // valid, within bounds but random content
 	}
 
 	return 0;
@@ -444,24 +401,93 @@ void test_ubsan_object_size_mismatch(void)
     ptr = (long long *)&val;
     val2 = *ptr;
 }
+/*---------------- end UBSAN testcases ---------------------------------------*/
+/*
+ * Testcase for the [__]copy_[to|from]_user[_inatomic]() routines for OOB accesses.
+ * Copied verbatim from lib/test_kasan_module.c
+ */
+#include <uapi/asm-generic/mman-common.h>
+#include <uapi/linux/mman.h>
+#define KASAN_SHADOW_SCALE_SIZE  3
+/* Due to our being out-of-tree, attmepting to use kernel macros won't always
+ * work well; so we just hard-code this to the expected value...
+ *  (KASAN_SHADOW_SCALE_SIZE = 1UL << KASAN_SHADOW_SCALE_SHIFT
+ *   and KASAN_SHADOW_SCALE_SHIFT = 3)
+ */
+#define OOB_TAG_OFF (IS_ENABLED(CONFIG_KASAN_GENERIC) ? 0 : KASAN_SHADOW_SCALE_SIZE)
+noinline void oob_copy_user_test(void)
+{
+    char *kmem;
+    char __user *usermem;
+    size_t size = 10;
+    int unused;
+
+    kmem = kmalloc(size, GFP_KERNEL);
+    if (!kmem)
+        return;
+
+    usermem = (char __user *)vm_mmap(NULL, 0, PAGE_SIZE,
+                PROT_READ | PROT_WRITE | PROT_EXEC,
+                MAP_ANONYMOUS | MAP_PRIVATE, 0);
+    if (IS_ERR(usermem)) {
+        pr_err("Failed to allocate user memory\n");
+        kfree(kmem);
+        return;
+    }
+
+#if 0
+	/* Skipping these two as the compiler itself (quite cleverly) catches them!
+	 * This is the gcc output: [...]
+	 * In function 'check_copy_size',
+    inlined from 'copy_from_user' at ./include/linux/uaccess.h:191:6,
+    inlined from 'copy_user_test' at /home/letsdebug/Linux-Kernel-Debugging/ch7/kmembugs_test/kmembugs_test.c:482:14:
+./include/linux/thread_info.h:160:4: error: call to '__bad_copy_to' declared with attribute error: copy destination size is too small
+  160 |    __bad_copy_to();
+      |    ^~~~~~~~~~~~~~~
+     */
+	pr_info("out-of-bounds in copy_from_user()\n");
+    unused = copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+
+	// similar gcc o/p as above...
+    pr_info("out-of-bounds in copy_to_user()\n");
+    unused = copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
+#endif
+
+    pr_info("out-of-bounds in __copy_from_user()\n");
+    unused = __copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+
+    pr_info("out-of-bounds in __copy_to_user()\n");
+    unused = __copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
+
+    pr_info("out-of-bounds in __copy_from_user_inatomic()\n");
+    unused = __copy_from_user_inatomic(kmem, usermem, size + 1 + OOB_TAG_OFF);
+
+    pr_info("out-of-bounds in __copy_to_user_inatomic()\n");
+    unused = __copy_to_user_inatomic(usermem, kmem, size + 1 + OOB_TAG_OFF);
+
+    pr_info("out-of-bounds in strncpy_from_user()\n");
+    unused = strncpy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+
+    vm_munmap((unsigned long)usermem, PAGE_SIZE);
+    kfree(kmem);
+}
 
 
 static int __init kmembugs_test_init(void)
 {
 	int stat;
 
-	pr_info("Testing via ");
-		/*
-		 * Realize that the kasan_save_enable_multi_shot() / kasan_restore_multi_shot()
-		 * pair of functions work only on a kernel that has CONFIG_KASAN=y. Also,
-		 * we're expecting Generic KASAN enabled.
-		 */
+	/*
+	 * Realize that the kasan_save_enable_multi_shot() / kasan_restore_multi_shot()
+	 * pair of functions work only on a kernel that has CONFIG_KASAN=y. Also,
+	 * we're expecting Generic KASAN enabled.
+	 */
 #ifdef CONFIG_KASAN_GENERIC
-		kasan_multishot = kasan_save_enable_multi_shot();
-		pr_info("KASAN configured\n");
+	kasan_multishot = kasan_save_enable_multi_shot();
+	pr_info("KASAN configured\n");
 #else
-		pr_warn("Attempting to test for KASAN on a non-KASAN-enabled kernel!\n");
-//		return -EINVAL;
+	pr_warn("Attempting to test for KASAN on a non-KASAN-enabled kernel!\n");
+//	return -EINVAL;
 #endif
 	if (IS_ENABLED(CONFIG_UBSAN))
 		pr_info("UBSAN configured\n");
@@ -473,58 +499,6 @@ static int __init kmembugs_test_init(void)
 		return stat;
 
 	return 0;		/* success */
-
-#if 0
-	for (i = 0; i < numtimes; i++) {
-		int umr_ret;
-		char *res1 = NULL, *res2 = NULL;
-
-		// 1. Run the UMR - Uninitialized Memory Read - testcase
-		umr_ret = umr();
-		//pr_info("testcase 1: UMR (val=%d)\n", umr_ret);
-
-		// 2. Run the UAR - Use After Return - testcase
-		res1 = uar();
-		pr_info("testcase 2: UAR: res1 = \"%s\"\n",
-			res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
-
-		// 3. Run the UAF - Use After Free - testcase
-
-		//---------- 4. OOB accesses on static memory (read/write under/overflow)
-		pr_info
-		    ("testcases set 4: simple OOB accesses on static memory (read/write under/overflow)\n");
-		pr_info(" 4.1: static (compile-time) mem: OOB read (right) overflow\n");
-//		static_mem_oob_right(READ);
-		pr_info(" 4.2: static (compile-time) mem: OOB write (right) overflow\n");
-		static_mem_oob_right(WRITE);
-		pr_info(" 4.3: static (compile-time) mem: OOB read (left) underflow\n");
-//		static_mem_oob_left(READ);
-		pr_info(" 4.4: static (compile-time) mem: OOB write (left) underflow\n");
-		static_mem_oob_left(WRITE);
-
-		/*
-		   oob_array_dynmem();
-
-		   // 5. OOB static array access
-		   pr_info("testcase 6: simple OOB memory access on static (compile-time) memory array\n");
-		   oob_array_staticmem();
-		 */
-
-		// 6.1. memory leak 1
-		pr_info("testcase 6.1: simple memory leak testcase 1\n");
-		leak_simple1();
-
-		// 6.2. memory leak 2: caller's to free the memory!
-		pr_info("testcase 6.2: simple memory leak testcase 2\n");
-		res2 = (char *)leak_simple2();
-		pr_info(" res2 = \"%s\"\n",
-			res2 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res2);
-		if (0)		// test: ensure it isn't freed by the caller
-			kfree(res2);
-	}
-
-	return 0;		/* success */
-#endif
 }
 
 static void __exit kmembugs_test_exit(void)

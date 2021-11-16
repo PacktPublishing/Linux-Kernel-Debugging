@@ -70,8 +70,11 @@ void test_ubsan_out_of_bounds(void);
 void test_ubsan_load_invalid_value(void);
 void test_ubsan_misaligned_access(void);
 void test_ubsan_object_size_mismatch(void);
+
+noinline void oob_copy_user_test(void);
 //----------------------------------------------
 struct dentry *gparent;
+EXPORT_SYMBOL(gparent);
 
 #define MAXUPASS 4
 static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count, loff_t *fpos)
@@ -111,11 +114,9 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	else if (!strncmp(udata, "4.2", 4))
 		static_mem_oob_right(WRITE);
 	else if (!strncmp(udata, "4.3", 4))
-		static_mem_oob_left2(READ);
-		//static_mem_oob_left(READ);
+		static_mem_oob_left(READ);
 	else if (!strncmp(udata, "4.4", 4))
-		static_mem_oob_left2(WRITE);
-		//static_mem_oob_left(WRITE);
+		static_mem_oob_left(WRITE);
 	else if (!strncmp(udata, "5.1", 4))
 		dynamic_mem_oob_right(READ);
 	else if (!strncmp(udata, "5.2", 4))
@@ -148,6 +149,8 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		test_ubsan_misaligned_access();
 	else if (!strncmp(udata, "8.9", 4))
 		test_ubsan_object_size_mismatch();
+	else if (!strncmp(udata, "9", 2))
+		oob_copy_user_test();
 	else
 		pr_warn("Invalid testcase # (%s) passed\n", udata);
 
