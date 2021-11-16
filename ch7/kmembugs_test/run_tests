@@ -19,7 +19,7 @@ grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
 echo
 }
 
-
+#--- 'main'
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
    exit 1
@@ -37,7 +37,7 @@ if grep -q "CONFIG_DEBUG_FS_DISALLOW_MOUNT=y" ${KCONF} ; then
 fi
 [ ! -d ${DBGFS_MNT} ] && {
 	echo "${name}: debugfs mount point \"${DBGFS_MNT}\" not present?
-If this is expected, pl fix this script to have the correct location and retry"
+If this is expected, pl fix this script to point to the correct location and retry"
 	exit 1
 }
 KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
@@ -49,6 +49,8 @@ echo "Debugfs file: ${KMOD_DBGFS_FILE}
 "
 
 show_curr_config
+
+MAX_TESTNUM=9
 
 #--- all ok, let's go
 echo "Select testcase to run:
@@ -85,12 +87,14 @@ UBSAN arithmetic UB testcases
 8.8  misaligned access
 8.9  object size mismatch
 
+9  copy_[to|from]_user*() tests
+
 (Type in the testcase number to run): "
 read testcase
-pretend_int_tc=${testcase}
+pretend_int_tc=${testcase}  # just to validate
 [ ${#testcase} -eq 3 ] && pretend_int_tc=${testcase::-2}
 #echo "pretend_int_tc=${pretend_int_tc}"
-if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt 8 ]; then
+if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt ${MAX_TESTNUM} ]; then
    echo "${name}: invalid testcase # (${testcase})"
    exit 1
 fi

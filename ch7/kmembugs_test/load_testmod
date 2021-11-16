@@ -40,33 +40,9 @@ else
    echo "Generic KASAN enabled"
 fi
 [[ ${ubsan} -eq 0 ]] && [[ ${kasan} -eq 0 ]] && {
-   echo "Both KASAN and UBSAN are disabled for this kernel, aborting..."
-   exit 1
+   echo "=== NOTE! Both KASAN and UBSAN are disabled for this kernel ==="
 }
 val=0
 [ ${kasan} -eq 1 ] && val=1
 setup_testmod ${val}
-exit 0
-
-
-
-if [ $# -ne 1 ]; then
-   echo "
-Usage: ${name} option[0|1]*
-0 : don't enable KASAN-based testing
-1 : enable KASAN-based testing
-
-* This actually determines what value is passed via the module parameter
-  use_kasan_multishot"
-  exit 1
-fi
-val=$1
-
-[[ ${val} -ne 0 ]] && [[ ${val} -ne 1 ]] && {
-   echo "Invalid value ${val} passed; only 0 or 1 is allowed..."
-   exit 1
-}
-
-setup_testmod ${val}
-
 exit 0
