@@ -140,7 +140,6 @@ void *leak_simple2(void)
 #define READ	0
 #define WRITE	1
 
-/********* TODO / RELOOK : KASAN isn't catching static global mem OOB !!! **************/
 static char global_arr[10];
 
 /*
@@ -151,10 +150,16 @@ int static_mem_oob_right(int mode)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
+	char *volatile ptr = global_arr;
+    char *p;
 
 	if (mode == READ) {
-		w = global_arr[ARRAY_SIZE(global_arr) - 2];	// valid and within bounds
-		x = global_arr[ARRAY_SIZE(global_arr) + 2];	// invalid, not within bounds
+		p = ptr - 3;
+		w = *(volatile char *)p;
+		p = ptr + 3;
+		x = *(volatile char *)p;
+		//w = global_arr[ARRAY_SIZE(global_arr) - 2];	// valid and within bounds
+		//x = global_arr[ARRAY_SIZE(global_arr) + 2];	// invalid, not within bounds
 
 		y = local_arr[ARRAY_SIZE(local_arr) - 5];	// valid and within bounds but random content!
 		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, not within bounds
@@ -178,6 +183,7 @@ int static_mem_oob_right(int mode)
 	return 0;
 }
 
+/*** TODO / RELOOK : KASAN isn't catching static global mem OOB on rd/wr underflow !!! ***/
 /*
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
  * Covers both read/write overflow on both static global and local/stack memory
@@ -186,10 +192,20 @@ int static_mem_oob_left(int mode)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
+	char *volatile ptr = global_arr;
+    char *p;
+
+	w = *(volatile char *)(ptr-6000);
 
 	if (mode == READ) {
-		w = global_arr[-2];	// invalid, not within bounds
-		x = global_arr[2];	// valid, within bounds
+		p = ptr - 5000;
+		w = *(volatile char *)(ptr-3);
+	pr_debug("global_arr=%px ptr=%px p=%px w=%x\n", global_arr, ptr, ptr-3, w); 
+
+		p = ptr + 3;
+		x = *(volatile char *)p;
+		//w = global_arr[-2];	// invalid, not within bounds
+		//x = global_arr[2];	// valid, within bounds
 
 		y = local_arr[-5];	// invalid, not within bounds and random!
 		z = local_arr[5];	// valid, within bounds but random content

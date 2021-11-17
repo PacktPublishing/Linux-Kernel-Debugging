@@ -9,7 +9,7 @@ name=$(basename $0)
 setup_testmod()
 {
 KMOD=test_kmembugs
-make || return
+make CC=clang-11 || return
 [ ! -f ${KMOD}.ko ] && {
    echo "Module ${KMOD}.ko not built? aborting..."
    exit 1
