@@ -6,6 +6,8 @@ name=$(basename $0)
 KMOD=test_kmembugs
 DBGFS_MNT=/sys/kernel/debug
 
+INTERACTIVE=1
+
 # TODO
 # locate_kernel_config()
 KCONF=/boot/config-$(uname -r)
@@ -18,6 +20,22 @@ echo -n "        UBSAN: "
 grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
 echo
 }
+
+# Parameter is the testcase # to run
+run_testcase()
+{
+# echo "num=$# params=$@"
+  [ $# -ne 1 ] && {
+    echo "run_testcase(): pass the testcase # as the parameter"
+	return
+  }
+  local testcase=$1
+  echo "-------- Running testcase \"${testcase}\" via test module now..."
+  dmesg -C
+  echo "${testcase}" > ${KMOD_DBGFS_FILE}
+  dmesg
+}
+
 
 #--- 'main'
 if ! lsmod | grep -q ${KMOD} ; then
@@ -51,6 +69,8 @@ echo "Debugfs file: ${KMOD_DBGFS_FILE}
 show_curr_config
 
 MAX_TESTNUM=9
+
+if [ ${INTERACTIVE} -eq 1 ] ; then
 
 #--- all ok, let's go
 echo "Select testcase to run:
@@ -98,10 +118,15 @@ if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt ${MAX_TESTNUM} ]; then
    echo "${name}: invalid testcase # (${testcase})"
    exit 1
 fi
+run_testcase ${testcase}
 
-echo "Running testcase \"${testcase}\" via test module now..."
-dmesg -C
-echo "${testcase}" > ${KMOD_DBGFS_FILE}
-dmesg
+else   # non-interactive, run all !
+
+  for testcase in 1 2 3.1 3.2 4.1 4.2 4.3 4.4 5.1 5.2 5.3 5.4 6 7 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 8.9 9
+  do
+    run_testcase ${testcase}
+  done
+
+fi
 
 exit 0
