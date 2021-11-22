@@ -166,28 +166,27 @@ int global_mem_oob_right(int mode)
     char *p;
 
 	if (mode == READ) {
-		p = ptr - 3;
-		w = *(volatile char *)p;
+		p = ptr + ARRAY_SIZE(global_arr) + 3;
+		w = *(volatile char *)p; // invalid, OOB right read
 		p = ptr + 3;
-		x = *(volatile char *)p;
+		x = *(volatile char *)p; // valid
 
 		y = local_arr[ARRAY_SIZE(local_arr) - 5];	// valid and within bounds but random content!
-		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, not within bounds
+		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, OOB right read
 	}
 	else if (mode == WRITE) {
-		global_arr[ARRAY_SIZE(global_arr) - 2] = 'w';	// valid and within bounds
-		global_arr[ARRAY_SIZE(global_arr) + 2] = 'x';	// invalid, not within bounds
+		global_arr[ARRAY_SIZE(global_arr) - 3] = 'w';	// valid and within bounds
+		global_arr[ARRAY_SIZE(global_arr) + 3] = 'x';	// invalid, OOB right write
 
 		local_arr[ARRAY_SIZE(local_arr) - 5] = 'y';	// valid and within bounds but random content!
-		local_arr[ARRAY_SIZE(local_arr) + 5] = 'z';	// invalid, not within bounds
+		local_arr[ARRAY_SIZE(local_arr) + 5] = 'z';	// invalid, OOB right write
 	}
 	return 0;
 }
 
-/*** KASAN isn't catching static global mem OOB on rd/wr underflow !!! ***/
 /*
  * OOB on static (compile-time) mem: OOB read/write (left) underflow
- * Covers both read/write overflow on both static global and local/stack memory
+globalvers both read/write overflow on both static global and local/stack memory
  * Note: With gcc 10, 11 or clang < 11, KASAN isn't catching static global
  * memory OOB on read/write underflow!
  */
@@ -198,21 +197,30 @@ int global_mem_oob_left(int mode)
 	char *volatile ptr = global_arr;
     char *p;
 
-	w = *(volatile char *)(ptr-6000);
-
 	if (mode == READ) {
-		p = ptr - 5000;
-		w = *(volatile char *)(ptr-3);
-	pr_debug("global_arr=%px ptr=%px p=%px w=%x\n", global_arr, ptr, ptr-3, w); 
+	    /* Interesting: this OOB access isn't caught by UBSAN */
+		p = ptr - 3;
+		w = *(volatile char *)p; // invalid, OOB left write
 
-		p = ptr + 3;
-		x = *(volatile char *)p;
+	    /* ... but these OOB accesses are caught by UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
+		 */
+		x = global_arr[-3]; // invalid, OOB left write
 
 		y = local_arr[-5];	// invalid, not within bounds and random!
 		z = local_arr[5];	// valid, within bounds but random content
 	} else if (mode == WRITE) {
-		global_arr[-2] = 'w'; // invalid, not within bounds
-		global_arr[2] = 'x';  // valid, within bounds
+	    /* Interesting: this OOB access isn't caught by UBSAN */
+		p = ptr - 3;
+		*(volatile char *)p = 'w';
+
+	    /* ... but these OOB accesses are caught by UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
+		 */
+		global_arr[-3] = 'w'; // invalid, not within bounds
+		global_arr[3] = 'x';  // valid, within bounds
 
 		local_arr[-5] = 'y';  // invalid, not within bounds and random!
 		local_arr[5] = 'z';	  // valid, within bounds but random content

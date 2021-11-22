@@ -28,7 +28,22 @@ grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
 echo
 }
 
+usage()
+{
+ echo "Usage: ${name} [--no-clear]
+ --no-clear: do NOT clear the kernel ring buffer before & after running the testcase
+ optional, off by default"
+}
+
+
 #--- 'main'
+if [[ $# -ge 1 ]] && [[ $1 = "-h" ]]; then
+  usage
+  exit 0
+fi
+no_clear=0
+[[ $1 = "--no-clear" ]] && no_clear=1
+echo "no_clear=${no_clear}"
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
    exit 1
@@ -116,7 +131,7 @@ if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt ${MAX_TESTNUM} ]; then
 fi
 
 echo "Running testcase \"${testcase}\" via test module now..."
-dmesg -C
+[ ${no_clear} -eq 0 ] && dmesg -C
 echo "${testcase}" > ${KMOD_DBGFS_FILE}  # the real work!
 dmesg
 
