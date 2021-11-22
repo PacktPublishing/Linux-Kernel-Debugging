@@ -183,7 +183,7 @@ int global_mem_oob_right(int mode, char *p)
 		x = *(volatile char *)ptr; // valid
 
 		y = local_arr[ARRAY_SIZE(local_arr) - 5];	// valid and within bounds but random content!
-		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, OOB right read
+		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, OOB right read and random
 	}
 	else if (mode == WRITE) {
 		*(volatile char *)ptr = 'x'; // invalid, OOB right write
@@ -236,8 +236,8 @@ int global_mem_oob_left(int mode, char *p)
 		p[-3] = 'w'; // invalid, OOB left write
 		p[3] = 'x';  // valid, within bounds
 
-		local_arr[-5] = 'y';  // invalid, not within bounds and random!
-		local_arr[5] = 'z';	  // valid, within bounds but random content
+		local_arr[-5] = 'y';  // invalid, not within bounds
+		local_arr[5] = 'z';	  // valid, within bounds
 	}
 	return 0;
 }

@@ -43,7 +43,6 @@ if [[ $# -ge 1 ]] && [[ $1 = "-h" ]]; then
 fi
 no_clear=0
 [[ $1 = "--no-clear" ]] && no_clear=1
-echo "no_clear=${no_clear}"
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
    exit 1
