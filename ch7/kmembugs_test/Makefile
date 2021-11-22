@@ -58,7 +58,6 @@ endif
 # Compiler
 CC     := $(CROSS_COMPILE)gcc
 #CC     := $(CROSS_COMPILE)gcc-10
-#CC := clang
 
 PWD            := $(shell pwd)
 # Special case here: we have 2 source files; compile and then link them into
@@ -81,7 +80,11 @@ ifeq (${MYDEBUG}, y)
 
 # https://www.kernel.org/doc/html/latest/kbuild/makefiles.html#compilation-flags
 # EXTRA_CFLAGS deprecated; use ccflags-y
-  ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
+  ifeq (${CC}, clang)
+     ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer
+  else
+     ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
+  endif
   # man gcc: "...-Og may result in a better debugging experience"
 else
   INSTALL_MOD_STRIP := 1
