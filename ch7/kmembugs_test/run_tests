@@ -1,7 +1,16 @@
 #!/bin/bash
 # run_tests
-# Simple bash wrapper to run our custom testcases for KASAN & UBSAN
-
+#***************************************************************
+# This program is part of the source code released for the book
+#  "Linux Kernel Debugging"
+# (c) Author: Kaiwan N Billimoria
+# Publisher:  Packt
+# GitHub repository:
+# https://github.com/PacktPublishing/Linux-Kernel-Debugging
+#
+# From: Ch 7: Debugging kernel memory issues
+#***************************************************************
+# Simple bash wrapper to run our custom testcases for KASAN & UBSAN.
 name=$(basename $0)
 KMOD=test_kmembugs
 DBGFS_MNT=/sys/kernel/debug
@@ -37,7 +46,7 @@ if grep -q "CONFIG_DEBUG_FS_DISALLOW_MOUNT=y" ${KCONF} ; then
 fi
 [ ! -d ${DBGFS_MNT} ] && {
 	echo "${name}: debugfs mount point \"${DBGFS_MNT}\" not present?
-If this is expected, pl fix this script to point to the correct location and retry"
+If this is expected, pl fix this script to point to the correct debugfs mount location and retry"
 	exit 1
 }
 KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
@@ -47,12 +56,9 @@ KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
 }
 echo "Debugfs file: ${KMOD_DBGFS_FILE}
 "
-
 show_curr_config
 
-MAX_TESTNUM=9
-
-#--- all ok, let's go
+#--- all ok, let's go; display the menu, accept the testcase #
 echo "Select testcase to run:
 1  Uninitialized Memory Read - UMR
 2  Use After Return - UAR
@@ -88,12 +94,22 @@ UBSAN arithmetic UB testcases
 8.9  object size mismatch
 
 9  copy_[to|from]_user*() tests
+10 UMR on slab (SLUB) memory
 
 (Type in the testcase number to run): "
 read testcase
+
+#SLUB debug tests: OOB accesses on dynamic (kmalloc-ed) memory
+#11.1 Read  (right) overflow
+#11.2 Write (right) overflow
+
+MAX_TESTNUM=10
 pretend_int_tc=${testcase}  # just to validate
-[ ${#testcase} -eq 3 ] && pretend_int_tc=${testcase::-2}
-#echo "pretend_int_tc=${pretend_int_tc}"
+if [ ${#testcase} -eq 3 ]; then
+   pretend_int_tc=${testcase::-2}
+elif [ ${#testcase} -eq 4 ]; then
+   pretend_int_tc=${testcase::-3}
+fi
 if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt ${MAX_TESTNUM} ]; then
    echo "${name}: invalid testcase # (${testcase})"
    exit 1
@@ -101,7 +117,7 @@ fi
 
 echo "Running testcase \"${testcase}\" via test module now..."
 dmesg -C
-echo "${testcase}" > ${KMOD_DBGFS_FILE}
+echo "${testcase}" > ${KMOD_DBGFS_FILE}  # the real work!
 dmesg
 
 exit 0

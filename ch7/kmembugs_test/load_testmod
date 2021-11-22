@@ -1,32 +1,47 @@
 #!/bin/bash
 # load_testmod
-# Simple bash wrapper to setup our custom testcases for KASAN & UBSAN
-
+#***************************************************************
+# This program is part of the source code released for the book
+#  "Linux Kernel Debugging"
+# (c) Author: Kaiwan N Billimoria
+# Publisher:  Packt
+# GitHub repository:
+# https://github.com/PacktPublishing/Linux-Kernel-Debugging
+#
+# From: Ch 7: Debugging kernel memory issues
+#***************************************************************
+# Simple bash wrapper to setup our custom testcases for KASAN & UBSAN.
+name=$(basename $0)
 # TODO
 # locate_kernel_config()
-name=$(basename $0)
+KCONF=/boot/config-$(uname -r)
 
 setup_testmod()
 {
 KMOD=test_kmembugs
-make CC=clang-11 || return
+if grep -q "CONFIG_CC_IS_GCC=y" ${KCONF}; then
+   CCVAR=gcc
+   echo "This kernel has been built with gcc"
+elif grep -q "CONFIG_CC_IS_CLANG=y" ${KCONF}; then
+   CCVAR=clang
+   echo "This kernel has been built with clang"
+fi
+make CC=${CCVAR} || return
 [ ! -f ${KMOD}.ko ] && {
    echo "Module ${KMOD}.ko not built? aborting..."
    exit 1
 }
 sudo rmmod ${KMOD} 2>/dev/null
 sudo dmesg -C
-sudo insmod ./${KMOD}.ko use_kasan_multishot=${1}
+sudo insmod ./${KMOD}.ko
 sudo dmesg
 }
-
 
 #--- 'main' here
 
 echo "Kernel ver: $(uname -r)"
 ubsan=1
 kasan=1
-KCONF=/boot/config-$(uname -r)
 if ! grep -q "CONFIG_UBSAN=y" ${KCONF}; then
    echo "UBSAN disabled for this kernel"
    ubsan=0
