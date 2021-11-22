@@ -50,8 +50,8 @@ void *uar(void);                     // testcase 2
 void leak_simple1(void);             // testcase 3.1
 void *leak_simple2(void);            // testcase 3.2
 
-int global_mem_oob_right(int mode);  // testcase 4.1/5.1
-int global_mem_oob_left(int mode);   // testcase 4.2/5.2
+int global_mem_oob_right(int mode, char *p);  // testcase 4.1/5.1
+int global_mem_oob_left(int mode, char *p);   // testcase 4.2/5.2
 int dynamic_mem_oob_right(int mode); // testcase 4.3/5.3
 int dynamic_mem_oob_left(int mode);  // testcase 4.4/5.4
 
@@ -76,6 +76,8 @@ int umr_slub(void); // SLUB debug testcase, testcase 10
 
 struct dentry *gparent;
 EXPORT_SYMBOL(gparent);
+
+extern char global_arr1[], global_arr2[], global_arr3[];
 
 #define MAXUPASS 5
 static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count, loff_t *fpos)
@@ -111,13 +113,13 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
         if (0)      // test: ensure it isn't freed by the caller
             kfree((char *)res2);
 	} else if (!strncmp(udata, "4.1", 4))
-		global_mem_oob_right(READ);
+		global_mem_oob_right(READ, global_arr2);
 	else if (!strncmp(udata, "4.2", 4))
-		global_mem_oob_right(WRITE);
+		global_mem_oob_right(WRITE, global_arr2);
 	else if (!strncmp(udata, "4.3", 4))
-		global_mem_oob_left(READ);
+		global_mem_oob_left(READ, global_arr2);
 	else if (!strncmp(udata, "4.4", 4))
-		global_mem_oob_left(WRITE);
+		global_mem_oob_left(WRITE, global_arr2);
 	else if (!strncmp(udata, "5.1", 4))
 		dynamic_mem_oob_right(READ);
 	else if (!strncmp(udata, "5.2", 4))

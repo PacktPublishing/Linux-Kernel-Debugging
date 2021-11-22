@@ -87,7 +87,7 @@ int umr_slub(void)
 	q = kmalloc(32, GFP_KERNEL);
 	if (unlikely(!q))
 		return -ENOMEM;
-	pr_info("q[3] is 0x%x\n", *(q+3));
+	pr_info("q[3] is 0x%x\n", q[3]); //*(q+3));
 	print_hex_dump_bytes("q: ", DUMP_PREFIX_OFFSET, (void *)q, 32);
 	kfree((char *)q);
 
@@ -141,7 +141,7 @@ void *leak_simple2(void)
 #define NUM_ALLOC2	8
 	q = kmalloc(NUM_ALLOC2, GFP_KERNEL);
 	for (i = 0; i < NUM_ALLOC2 - 1; i++)
-		q[i] = heehee[i];	// 'x';
+		q[i] = heehee[i];
 	q[i] = '\0';
 
 	return (void *)q;
@@ -150,77 +150,91 @@ void *leak_simple2(void)
 #define READ	0
 #define WRITE	1
 
-static char global_arr[10];
+/* Observations on KASAN catching OOB accesses on global (static) memory:
+ * a) requires compilation by clang 11 or later
+ * b) the way the internal redzoning and padding seems to work, it appears that
+ *    the first declared global (this depends on how the linker sets it up), may
+ *    not have a left redzone, causing left OOBs to be missed... This is why we
+ *    use three global arrays; we'll pass the middle one; hopefully, it's
+ *    properly redzoned and OOB accesses caught.
+ */
+#define ARRSZ	10
+char global_arr1[ARRSZ];
+char global_arr2[ARRSZ];
+char global_arr3[ARRSZ];
 
 /*
- * OOB on static (compile-time) mem: OOB read/write (right) overflow
- * Covers both read/write overflow on both static global and local/stack memory
+ * OOB on static (compile-time) mem: OOB read/write (right) overflow.
+ * Covers both read/write overflow on both static global and local/stack memory.
+ * The parameter p is a pointer to one of the global memory arrays we have in
+ * this module.
  * Note: With gcc 10, 11 or clang < 11, KASAN isn't catching static global
  * memory OOB on read/write underflow!
  */
-int global_mem_oob_right(int mode)
+int global_mem_oob_right(int mode, char *p)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
-	char *volatile ptr = global_arr;
-    char *p;
+	char *volatile ptr = p + ARRSZ + 3;
 
 	if (mode == READ) {
-		p = ptr + ARRAY_SIZE(global_arr) + 3;
-		w = *(volatile char *)p; // invalid, OOB right read
-		p = ptr + 3;
-		x = *(volatile char *)p; // valid
+		w = *(volatile char *)ptr; // invalid, OOB right read
+		ptr = p + 3;
+		x = *(volatile char *)ptr; // valid
 
 		y = local_arr[ARRAY_SIZE(local_arr) - 5];	// valid and within bounds but random content!
 		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, OOB right read
 	}
 	else if (mode == WRITE) {
-		global_arr[ARRAY_SIZE(global_arr) - 3] = 'w';	// valid and within bounds
-		global_arr[ARRAY_SIZE(global_arr) + 3] = 'x';	// invalid, OOB right write
+		*(volatile char *)ptr = 'x'; // invalid, OOB right write
 
-		local_arr[ARRAY_SIZE(local_arr) - 5] = 'y';	// valid and within bounds but random content!
+		p[ARRSZ - 3] = 'w';	// valid and within bounds
+		p[ARRSZ + 3] = 'x';	// invalid, OOB right write
+
+		local_arr[ARRAY_SIZE(local_arr) - 5] = 'y';	// valid and within bounds
 		local_arr[ARRAY_SIZE(local_arr) + 5] = 'z';	// invalid, OOB right write
 	}
 	return 0;
 }
 
 /*
- * OOB on static (compile-time) mem: OOB read/write (left) underflow
-globalvers both read/write overflow on both static global and local/stack memory
+ * OOB on static (compile-time) mem: OOB read/write (left) underflow.
+ * Covers both read/write overflow on both static global and local/stack memory.
+ * The parameter p is a pointer to one of the global memory arrays we have in
+ * this module.
  * Note: With gcc 10, 11 or clang < 11, KASAN isn't catching static global
  * memory OOB on read/write underflow!
  */
-int global_mem_oob_left(int mode)
+int global_mem_oob_left(int mode, char *p)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
-	char *volatile ptr = global_arr;
-    char *p;
+	char *volatile ptr = p;
 
 	if (mode == READ) {
 	    /* Interesting: this OOB access isn't caught by UBSAN */
-		p = ptr - 3;
-		w = *(volatile char *)p; // invalid, OOB left write
+		ptr -= 3;
+		w = *(volatile char *)p; // invalid, OOB left read
 
 	    /* ... but these OOB accesses are caught by UBSAN.
 		 * We conclude that *only* the index-based accesses are caught by UBSAN.
 		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
 		 */
-		x = global_arr[-3]; // invalid, OOB left write
+		x = p[-3]; // invalid, OOB left read
 
 		y = local_arr[-5];	// invalid, not within bounds and random!
 		z = local_arr[5];	// valid, within bounds but random content
 	} else if (mode == WRITE) {
 	    /* Interesting: this OOB access isn't caught by UBSAN */
-		p = ptr - 3;
+		ptr -= 3;
 		*(volatile char *)p = 'w';
 
 	    /* ... but these OOB accesses are caught by UBSAN.
 		 * We conclude that *only* the index-based accesses are caught by UBSAN.
 		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
 		 */
-		global_arr[-3] = 'w'; // invalid, not within bounds
-		global_arr[3] = 'x';  // valid, within bounds
+		p[-3] = 'w'; // invalid, OOB left write
+		p[3] = 'x';  // valid, within bounds
 
 		local_arr[-5] = 'y';  // invalid, not within bounds and random!
 		local_arr[5] = 'z';	  // valid, within bounds but random content
@@ -232,16 +246,29 @@ int global_mem_oob_left(int mode)
 int dynamic_mem_oob_right(int mode)
 {
 	volatile char *kptr, ch = 0;
+	char *volatile ptr;
 	size_t sz = 32;
 
 	kptr = (char *)kmalloc(sz, GFP_KERNEL);
 	if (unlikely(!kptr))
 		return -ENOMEM;
+	ptr = (char *)kptr + 3;
 
-	if (mode == READ)
-		ch = kptr[sz+3];
-	else if (mode == WRITE)
-		kptr[sz] = 'x';
+	if (mode == READ) {
+	    /* Interesting: this OOB access isn't caught by KASAN/UBSAN */
+		ch = *(volatile char *)ptr;
+	    /* ... but these OOB accesses are caught by KASAN/UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 */
+		ch = kptr[sz+3]; // invalid, OOB right read
+	} else if (mode == WRITE) {
+	    /* Interesting: this OOB access isn't caught by KASAN/UBSAN */
+		*(volatile char *)ptr = 'x';
+	    /* ... but these OOB accesses are caught by KASAN/UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 */
+		kptr[sz] = 'x'; // invalid, OOB right write
+	}
 
 	kfree((char *)kptr);
 	return 0;
