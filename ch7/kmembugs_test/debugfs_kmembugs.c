@@ -45,18 +45,18 @@
 #endif
 
 //----------------- The testcase function prototypes, in order
-int umr(void);                       // testcase 1
-void *uar(void);                     // testcase 2
-void leak_simple1(void);             // testcase 3.1
-void *leak_simple2(void);            // testcase 3.2
+int umr(void);			// testcase 1
+void *uar(void);		// testcase 2
+void leak_simple1(void);	// testcase 3.1
+void *leak_simple2(void);	// testcase 3.2
 
-int global_mem_oob_right(int mode, char *p);  // testcase 4.1/5.1
-int global_mem_oob_left(int mode, char *p);   // testcase 4.2/5.2
-int dynamic_mem_oob_right(int mode); // testcase 4.3/5.3
-int dynamic_mem_oob_left(int mode);  // testcase 4.4/5.4
+int global_mem_oob_right(int mode, char *p);	// testcase 4.1/5.1
+int global_mem_oob_left(int mode, char *p);	// testcase 4.2/5.2
+int dynamic_mem_oob_right(int mode);	// testcase 4.3/5.3
+int dynamic_mem_oob_left(int mode);	// testcase 4.4/5.4
 
-int uaf(void);                       // testcase 6
-int double_free(void);               // testcase 7
+int uaf(void);			// testcase 6
+int double_free(void);		// testcase 7
 
 // UBSAN testcases 8.x
 void test_ubsan_add_overflow(void);
@@ -70,8 +70,8 @@ void test_ubsan_load_invalid_value(void);
 void test_ubsan_misaligned_access(void);
 void test_ubsan_object_size_mismatch(void);
 
-noinline void oob_copy_user_test(void); // testcase 9
-int umr_slub(void); // SLUB debug testcase, testcase 10
+noinline void oob_copy_user_test(void);	// testcase 9
+int umr_slub(void);		// SLUB debug testcase, testcase 10
 //----------------------------------------------
 
 struct dentry *gparent;
@@ -80,7 +80,8 @@ EXPORT_SYMBOL(gparent);
 extern char global_arr1[], global_arr2[], global_arr3[];
 
 #define MAXUPASS 5
-static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count, loff_t *fpos)
+static ssize_t dbgfs_run_testcase(struct file *filp, const char __user * ubuf, size_t count,
+				  loff_t * fpos)
 {
 	char udata[MAXUPASS];
 	volatile char *res1 = NULL, *res2 = NULL;
@@ -91,7 +92,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	}
 	if (copy_from_user(udata, ubuf, count))
 		return -EIO;
-	udata[count-1]='\0';
+	udata[count - 1] = '\0';
 	pr_debug("testcase to run: %s\n", udata);
 
 	/* 
@@ -102,16 +103,16 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		umr();
 	else if (!strncmp(udata, "2", 2)) {
 		res1 = uar();
-        pr_info("testcase 2: UAR: res1 = \"%s\"\n",
-            res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
+		pr_info("testcase 2: UAR: res1 = \"%s\"\n",
+			res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
 	} else if (!strncmp(udata, "3.1", 4))
 		leak_simple1();
 	else if (!strncmp(udata, "3.2", 4)) {
-		res2 = (char *)leak_simple2(); // caller's expected to free the memory!
-        pr_info(" res2 = \"%s\"\n",
-            res2 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res2);
-        if (0)      // test: ensure it isn't freed by the caller
-            kfree((char *)res2);
+		res2 = (char *)leak_simple2();	// caller's expected to free the memory!
+		pr_info(" res2 = \"%s\"\n",
+			res2 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res2);
+		if (0)		// test: ensure it isn't freed by the caller
+			kfree((char *)res2);
 	} else if (!strncmp(udata, "4.1", 4))
 		global_mem_oob_right(READ, global_arr2);
 	else if (!strncmp(udata, "4.2", 4))
@@ -143,7 +144,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	else if (!strncmp(udata, "8.4", 4))
 		test_ubsan_divrem_overflow();
 	else if (!strncmp(udata, "8.5", 4))
-	    test_ubsan_shift_out_of_bounds();
+		test_ubsan_shift_out_of_bounds();
 	else if (!strncmp(udata, "8.6", 4))
 		test_ubsan_out_of_bounds();
 	else if (!strncmp(udata, "8.7", 4))
@@ -189,8 +190,7 @@ int debugfs_simple_intf_init(void)
 	 * function on write (via the classic file_operations structure).
 	 */
 #define DBGFS_FILE	"lkd_dbgfs_run_testcase"
-	file1 =
-	    debugfs_create_file(DBGFS_FILE, 0200, gparent, NULL, &dbgfs_fops);
+	file1 = debugfs_create_file(DBGFS_FILE, 0200, gparent, NULL, &dbgfs_fops);
 	if (!file1) {
 		pr_info("debugfs_create_file failed, aborting...\n");
 		stat = PTR_ERR(file1);
