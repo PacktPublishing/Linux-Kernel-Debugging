@@ -36,6 +36,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/mm.h>
 #include <linux/debugfs.h>
 
@@ -87,7 +88,7 @@ int umr_slub(void)
 	q = kmalloc(32, GFP_KERNEL);
 	if (unlikely(!q))
 		return -ENOMEM;
-	pr_info("q[3] is 0x%x\n", q[3]);	//*(q+3));
+	pr_info("q[3] is 0x%x\n", q[3]);
 	print_hex_dump_bytes("q: ", DUMP_PREFIX_OFFSET, (void *)q, 32);
 	kfree((char *)q);
 
@@ -117,19 +118,26 @@ void *uar(void)
 /* A simple memory leakage testcase 1 */
 void leak_simple1(void)
 {
-	char *p = NULL;
+	volatile char *p = NULL;
 
 	pr_info("testcase 3.1: simple memory leak testcase 1\n");
 	p = kzalloc(1520, GFP_KERNEL);
 	if (unlikely(!p))
 		return;
-
+	pr_info("kzalloc(1520) = 0x%px\n", p);
 	if (0)			// test: ensure it isn't freed
-		kfree(p);
+		kfree((char *)p);
+
+#ifndef CONFIG_MODULES
+	pr_info("kmem_cache_alloc(task_struct) = 0x%px\n",
+		kmem_cache_alloc(task_struct, GFP_KERNEL));
+#endif
+	pr_info("vmalloc(5*1024) = 0x%px\n", vmalloc(5*1024));
 }
 
 /* A simple memory leakage testcase 2.
- * The caller's to free the memory...
+ * *NOTE* The caller's responsible for freeing the memory allocated here!!!
+ * Our test is that the caller doesn't, resulting in a leak.
  */
 void *leak_simple2(void)
 {
@@ -498,6 +506,13 @@ noinline void oob_copy_user_test(void)
 	kfree(kmem);
 }
 
+#define CHKCONF(option) do {     \
+	if (IS_ENABLED(option))      \
+		pr_info("%s configured\n", #option); \
+	else  \
+		pr_info("%s NOT configured\n", #option); \
+} while (0)
+
 static int __init kmembugs_test_init(void)
 {
 	int stat;
@@ -513,10 +528,8 @@ static int __init kmembugs_test_init(void)
 #else
 	pr_info("KASAN NOT configured\n");
 #endif
-	if (IS_ENABLED(CONFIG_UBSAN))
-		pr_info("UBSAN configured\n");
-	else
-		pr_info("UBSAN NOT configured\n");
+	CHKCONF(CONFIG_UBSAN);
+	CHKCONF(CONFIG_DEBUG_KMEMLEAK);
 
 	stat = debugfs_simple_intf_init();
 	if (stat < 0)

@@ -11,6 +11,7 @@
 # From: Ch 7: Debugging kernel memory issues
 #***************************************************************
 # Simple bash wrapper to run our custom testcases for KASAN & UBSAN.
+# For details, please refer the book, Ch 7.
 name=$(basename $0)
 KMOD=test_kmembugs
 DBGFS_MNT=/sys/kernel/debug
@@ -19,12 +20,22 @@ DBGFS_MNT=/sys/kernel/debug
 # locate_kernel_config()
 KCONF=/boot/config-$(uname -r)
 
+# $1 : string decribing CONFIG_FOO to check
+# $1 : CONFIG_FOO to check
+chkconf()
+{
+[ $# -lt 2 ] && return
+echo -n "$1: "
+grep -q "$2=y" ${KCONF} && echo "enabled" || echo "disabled"
+}
+
 show_curr_config()
 {
-echo -n "Generic KASAN: "
-grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF} && echo "enabled" || echo "disabled"
-echo -n "        UBSAN: "
-grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
+chkconf "Generic KASAN" CONFIG_KASAN_GENERIC
+chkconf "UBSAN" CONFIG_UBSAN
+if echo "scan=on" > ${DBGFS_MNT}/kmemleak ; then
+   chkconf "KMEMLEAK" CONFIG_DEBUG_KMEMLEAK
+fi
 echo
 }
 
@@ -42,7 +53,10 @@ if [[ $# -ge 1 ]] && [[ $1 = "-h" ]]; then
   exit 0
 fi
 no_clear=0
-[[ $1 = "--no-clear" ]] && no_clear=1
+[[ $1 = "--no-clear" ]] && {
+  no_clear=1
+  echo "--no_clear: will not clear kernel log buffer after running a testcase"
+}
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
    exit 1
@@ -113,10 +127,11 @@ UBSAN arithmetic UB testcases
 (Type in the testcase number to run): "
 read testcase
 
-#SLUB debug tests: OOB accesses on dynamic (kmalloc-ed) memory
-#11.1 Read  (right) overflow
-#11.2 Write (right) overflow
-
+# validate
+[ -z "${testcase}" ] && {
+   echo "${name}: invalid testcase, can't be NULL"
+   exit 1
+}
 MAX_TESTNUM=10
 pretend_int_tc=${testcase}  # just to validate
 if [ ${#testcase} -eq 3 ]; then
