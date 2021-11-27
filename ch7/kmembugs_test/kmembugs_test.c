@@ -278,7 +278,7 @@ int dynamic_mem_oob_right(int mode)
 	char *volatile ptr;
 	size_t sz = 32;
 
-	kptr = (char *)kmalloc(sz, GFP_KERNEL);
+	kptr = kmalloc(sz, GFP_KERNEL);
 	if (unlikely(!kptr))
 		return -ENOMEM;
 	ptr = (char *)kptr + sz + 3; // right OOB

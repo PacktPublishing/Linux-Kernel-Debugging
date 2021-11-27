@@ -81,8 +81,8 @@ EXPORT_SYMBOL(gparent);
 extern char global_arr1[], global_arr2[], global_arr3[];
 
 #define MAXUPASS 5
-static ssize_t dbgfs_run_testcase(struct file *filp, const char __user * ubuf, size_t count,
-				  loff_t * fpos)
+static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count,
+				  loff_t *fpos)
 {
 	char udata[MAXUPASS];
 	volatile char *res1 = NULL, *res2 = NULL;
@@ -96,7 +96,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user * ubuf, s
 	udata[count - 1] = '\0';
 	pr_debug("testcase to run: %s\n", udata);
 
-	/* 
+	/*
 	 * Now udata contains the data passed from userspace - the testcase # to run
 	 * (as a string)
 	 */
@@ -166,7 +166,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user * ubuf, s
 	return count;
 }
 
-static struct file_operations dbgfs_fops = {
+static const struct file_operations dbgfs_fops = {
 	.write = dbgfs_run_testcase,
 };
 
