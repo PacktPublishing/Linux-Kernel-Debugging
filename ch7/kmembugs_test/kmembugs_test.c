@@ -38,7 +38,9 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
+#include <linux/irq_work.h>
 #include <linux/debugfs.h>
+#include "../../convenient.h"
 
 MODULE_AUTHOR("Kaiwan N Billimoria");
 MODULE_DESCRIPTION("kmembugs_test: a few additional test cases for KASAN/UBSAN");
@@ -51,6 +53,7 @@ static bool kasan_multishot;
 
 int debugfs_simple_intf_init(void);
 extern struct dentry *gparent;
+static struct irq_work irqwork;
 
 /*
  * All testcase functions are below:
@@ -154,6 +157,27 @@ void *leak_simple2(void)
 
 	return (void *)q;
 }
+
+/*
+ * This function runs in (hardirq) interrupt context
+ */
+void irq_work_leaky(struct irq_work *irqwk)
+{
+	int want_sleep_in_atomic_bug = 0;
+
+	PRINT_CTX();
+	if (want_sleep_in_atomic_bug == 1)
+		pr_debug("kzalloc(129) = 0x%px\n", kzalloc(129, GFP_KERNEL));
+	else
+		pr_debug("kzalloc(129) = 0x%px\n", kzalloc(129, GFP_ATOMIC));
+}
+
+void leak_simple3(void)
+{
+	pr_info("testcase 3.3: simple memory leak testcase 3\n");
+	irq_work_queue(&irqwork);
+}
+
 
 #define READ	0
 #define WRITE	1
@@ -530,6 +554,8 @@ static int __init kmembugs_test_init(void)
 #endif
 	CHKCONF(CONFIG_UBSAN);
 	CHKCONF(CONFIG_DEBUG_KMEMLEAK);
+
+	init_irq_work(&irqwork, irq_work_leaky);
 
 	stat = debugfs_simple_intf_init();
 	if (stat < 0)

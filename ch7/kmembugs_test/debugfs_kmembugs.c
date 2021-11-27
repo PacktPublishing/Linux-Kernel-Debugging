@@ -49,6 +49,7 @@ int umr(void);			// testcase 1
 void *uar(void);		// testcase 2
 void leak_simple1(void);	// testcase 3.1
 void *leak_simple2(void);	// testcase 3.2
+void leak_simple3(void);	// testcase 3.3
 
 int global_mem_oob_right(int mode, char *p);	// testcase 4.1/5.1
 int global_mem_oob_left(int mode, char *p);	// testcase 4.2/5.2
@@ -113,7 +114,9 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user * ubuf, s
 			res2 == NULL ? "<whoops, it's NULL>" : (char *)res2);
 		if (0)		// test: ensure it isn't freed by us, the caller
 			kfree((char *)res2);
-	} else if (!strncmp(udata, "4.1", 4))
+	} else if (!strncmp(udata, "3.3", 4))
+		leak_simple3();
+	else if (!strncmp(udata, "4.1", 4))
 		global_mem_oob_right(READ, global_arr2);
 	else if (!strncmp(udata, "4.2", 4))
 		global_mem_oob_right(WRITE, global_arr2);
