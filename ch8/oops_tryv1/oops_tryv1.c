@@ -32,7 +32,7 @@ MODULE_PARM_DESC(try_reading,
 
 static int __init try_oops_init(void)
 {
-	int val = 0x0;
+	size_t val = 0x0;
 
 	pr_info("Lets Oops!\nNow attempting to %s something %s the NULL address 0x%p\n",
 		!!try_reading ? "read" : "write", 
@@ -44,11 +44,11 @@ static int __init try_oops_init(void)
 		 * it away, as we're not working with the result of the read. This makes it
 		 * appear that the read does NOT cause an Oops; this ISN'T the case, it does,
 		 * of course.
-		 * So, to prove it, we printk the variable, and voila, we're rewarded with a
-		 * nice Oops !
+		 * So, to prove it, we try and printk the variable, and voila, we're rewarded
+		 * with a nice Oops !
 		 */
-		pr_info("val = 0x%x\n", val);
-	} else
+		pr_info("val = 0x%lx\n", val);
+	} else // try writing to NULL
 		*(int *)val = 'x';
 
 	return 0;		/* success */
