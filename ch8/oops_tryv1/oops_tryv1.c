@@ -25,19 +25,38 @@ MODULE_DESCRIPTION("LKD book:ch7/oops_tryv1: generates a kernel Oops! a kernel b
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
+static bool try_reading;
+module_param(try_reading, bool, 0644);
+MODULE_PARM_DESC(try_reading,
+"Trigger an Oops-generating bug when reading from NULL; else, do so by writing to NULL");
+
 static int __init try_oops_init(void)
 {
-	int *val = 0x0;
+	int val = 0x0;
 
-	pr_info("Lets Oops!\nNow attempting to write something to the NULL address 0x%p\n", NULL);
-	*(int *)val = 'x';
+	pr_info("Lets Oops!\nNow attempting to %s something %s the NULL address 0x%p\n",
+		!!try_reading ? "read" : "write", 
+		!!try_reading ? "from" : "to",  // pedantic, huh
+		NULL);
+	if (!!try_reading) {
+		val = *(int *)0x0;
+		/* Interesting! If we leave the code at this, the compiler actually optimizes
+		 * it away, as we're not working with the result of the read. This makes it
+		 * appear that the read does NOT cause an Oops; this ISN'T the case, it does,
+		 * of course.
+		 * So, to prove it, we printk the variable, and voila, we're rewarded with a
+		 * nice Oops !
+		 */
+		pr_info("val = 0x%x\n", val);
+	} else
+		*(int *)val = 'x';
 
 	return 0;		/* success */
 }
 
 static void __exit try_oops_exit(void)
 {
-	pr_info("Goodbye, from Oops try\n");
+	pr_info("Goodbye, from Oops try v1\n");
 }
 
 module_init(try_oops_init);
