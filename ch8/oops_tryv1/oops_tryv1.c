@@ -12,14 +12,13 @@
  ****************************************************************
  * Brief Description:
  *
- * For details, please refer the book, Ch 8.
+ * For details, please refer the book, Ch 7.
  */
 #define pr_fmt(fmt) "%s:%s():%d: " fmt, KBUILD_MODNAME, __func__, __LINE__
 
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/random.h>
 
 MODULE_AUTHOR("<insert your name here>");
 MODULE_DESCRIPTION("LKD book:ch7/oops_tryv1: generates a kernel Oops! a kernel bug");
@@ -28,10 +27,10 @@ MODULE_VERSION("0.1");
 
 static int __init try_oops_init(void)
 {
-	u8 val = 0x0;
+	int *val = 0x0;
 
-	pr_info("Lets Oops!\nNow reading content at the NULL address 0x%p\n", NULL);
-	val = *(int *)0x0;
+	pr_info("Lets Oops!\nNow attempting to write something to the NULL address 0x%p\n", NULL);
+	*(int *)val = 'x';
 
 	return 0;		/* success */
 }
