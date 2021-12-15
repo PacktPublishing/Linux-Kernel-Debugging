@@ -47,7 +47,7 @@ static int __init try_oops_init(void)
 		 * So, to prove it, we try and printk the variable, thus forcing the compiler
 		 * to generate the code, and voila, we're rewarded with a nice Oops !
 		 */
-		pr_info("val = 0x%lx\n", val);
+		pr_info("val = 0x%zu\n", val);
 	} else // try writing to NULL
 		*(int *)val = 'x';
 
