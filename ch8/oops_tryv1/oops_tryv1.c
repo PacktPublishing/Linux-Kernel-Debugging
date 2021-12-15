@@ -48,7 +48,13 @@ static int __init try_oops_init(void)
 		 * with a nice Oops !
 		 */
 		pr_info("val = 0x%zu\n", val);
-	} else // try writing to NULL
+		/*
+		 * How do we know that the size_t var requires the %zu format specifier?
+		 * These are important things to figure; pl see the kernel documentation
+		 * on this aspect here:
+		 * https://www.kernel.org/doc/Documentation/printk-formats.txt
+		 */
+	} else                     // try writing to NULL
 		*(int *)val = 'x';
 
 	return 0;		/* success */
