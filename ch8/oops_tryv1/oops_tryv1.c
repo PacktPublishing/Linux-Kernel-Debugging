@@ -44,8 +44,8 @@ static int __init try_oops_init(void)
 		 * it away, as we're not working with the result of the read. This makes it
 		 * appear that the read does NOT cause an Oops; this ISN'T the case, it does,
 		 * of course.
-		 * So, to prove it, we try and printk the variable, and voila, we're rewarded
-		 * with a nice Oops !
+		 * So, to prove it, we try and printk the variable, thus forcing the compiler
+		 * to generate the code, and voila, we're rewarded with a nice Oops !
 		 */
 		pr_info("val = 0x%zu\n", val);
 		/*

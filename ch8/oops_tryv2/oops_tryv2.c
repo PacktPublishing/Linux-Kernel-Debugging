@@ -1,5 +1,5 @@
 /*
- * ch8/oops_tryv2/oops_tryv2.c
+ * ch7/oops_tryv2/oops_tryv2.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -55,7 +55,6 @@ static void do_the_work(struct work_struct *work)
 	struct st_ctx *priv = container_of(work, struct st_ctx, work);
 
 	pr_info("In our workq function: data=%d\n", priv->data);
-	PRINT_CTX();
 	t2 = ktime_get_real_ns();
 	SHOW_DELTA(t2, t1);
 	if (!!bug_in_workq) {
@@ -88,8 +87,8 @@ static int __init try_oops_init(void)
 		pr_info("Generating Oops via kernel bug in workqueue function\n");
 		t1 = ktime_get_real_ns();
 		setup_work();
-	}
-	else if (mp_randaddr) {
+		return 0;
+	} else if (mp_randaddr) {
 		pr_info("Generating Oops by attempting to write to the invalid kernel address passed\n");
 		bad_kva = mp_randaddr;
 	} else {
