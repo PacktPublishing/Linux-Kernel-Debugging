@@ -1,7 +1,17 @@
 #!/bin/bash
 # run_tests
-# Simple bash wrapper to run our custom testcases for KASAN & UBSAN
-
+#***************************************************************
+# This program is part of the source code released for the book
+#  "Linux Kernel Debugging"
+# (c) Author: Kaiwan N Billimoria
+# Publisher:  Packt
+# GitHub repository:
+# https://github.com/PacktPublishing/Linux-Kernel-Debugging
+#
+# From: Ch 7: Debugging kernel memory issues
+#***************************************************************
+# Simple bash wrapper to run our custom testcases for KASAN & UBSAN.
+# For details, please refer the book, Ch 7.
 name=$(basename $0)
 KMOD=test_kmembugs
 DBGFS_MNT=/sys/kernel/debug
@@ -12,32 +22,57 @@ INTERACTIVE=1
 # locate_kernel_config()
 KCONF=/boot/config-$(uname -r)
 
+# $1 : string decribing CONFIG_FOO to check
+# $1 : CONFIG_FOO to check
+chkconf()
+{
+[ $# -lt 2 ] && return
+echo -n "$1: "
+grep -q "$2=y" ${KCONF} && echo "enabled" || echo "disabled"
+}
+
 show_curr_config()
 {
-echo -n "Generic KASAN: "
-grep -q "CONFIG_KASAN_GENERIC=y" ${KCONF} && echo "enabled" || echo "disabled"
-echo -n "        UBSAN: "
-grep -q "CONFIG_UBSAN=y" ${KCONF} && echo "enabled" || echo "disabled"
+chkconf "Generic KASAN" CONFIG_KASAN_GENERIC
+chkconf "UBSAN" CONFIG_UBSAN
+if echo "scan=on" > ${DBGFS_MNT}/kmemleak ; then
+   chkconf "KMEMLEAK" CONFIG_DEBUG_KMEMLEAK
+fi
 echo
 }
 
 # Parameter is the testcase # to run
 run_testcase()
 {
-# echo "num=$# params=$@"
   [ $# -ne 1 ] && {
     echo "run_testcase(): pass the testcase # as the parameter"
 	return
   }
   local testcase=$1
   echo "-------- Running testcase \"${testcase}\" via test module now..."
-  dmesg -C
-  echo "${testcase}" > ${KMOD_DBGFS_FILE}
+  [ ${no_clear} -eq 0 ] && dmesg -C
+  echo "${testcase}" > ${KMOD_DBGFS_FILE}  # the real work!
   dmesg
+}
+
+usage()
+{
+ echo "Usage: ${name} [--no-clear]
+ --no-clear: do NOT clear the kernel ring buffer before & after running the testcase
+ optional, off by default"
 }
 
 
 #--- 'main'
+if [[ $# -ge 1 ]] && [[ $1 = "-h" ]]; then
+  usage
+  exit 0
+fi
+no_clear=0
+[[ $1 = "--no-clear" ]] && {
+  no_clear=1
+  echo "--no_clear: will not clear kernel log buffer after running a testcase"
+}
 if ! lsmod | grep -q ${KMOD} ; then
    echo "${name}: load the test module first by running the load_testmod script"
    exit 1
@@ -55,7 +90,7 @@ if grep -q "CONFIG_DEBUG_FS_DISALLOW_MOUNT=y" ${KCONF} ; then
 fi
 [ ! -d ${DBGFS_MNT} ] && {
 	echo "${name}: debugfs mount point \"${DBGFS_MNT}\" not present?
-If this is expected, pl fix this script to point to the correct location and retry"
+If this is expected, pl fix this script to point to the correct debugfs mount location and retry"
 	exit 1
 }
 KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
@@ -65,14 +100,13 @@ KMOD_DBGFS_FILE=${DBGFS_MNT}/${KMOD}/lkd_dbgfs_run_testcase
 }
 echo "Debugfs file: ${KMOD_DBGFS_FILE}
 "
-
 show_curr_config
 
 MAX_TESTNUM=9
 
 if [ ${INTERACTIVE} -eq 1 ] ; then
 
-#--- all ok, let's go
+#--- all ok, let's go; display the menu, accept the testcase #
 echo "Select testcase to run:
 1  Uninitialized Memory Read - UMR
 2  Use After Return - UAR
@@ -80,6 +114,7 @@ echo "Select testcase to run:
 Memory leakage
 3.1  simple memory leakage testcase1
 3.2  simple memory leakage testcase2 - caller to free memory
+3.3  simple memory leakage testcase3 - memleak in interrupt ctx
 
 OOB accesses on static (compile-time) global memory + on stack local memory
 4.1  Read  (right) overflow
@@ -108,12 +143,23 @@ UBSAN arithmetic UB testcases
 8.9  object size mismatch
 
 9  copy_[to|from]_user*() tests
+10 UMR on slab (SLUB) memory
 
 (Type in the testcase number to run): "
 read testcase
+
+# validate
+[ -z "${testcase}" ] && {
+   echo "${name}: invalid testcase, can't be NULL"
+   exit 1
+}
+MAX_TESTNUM=10
 pretend_int_tc=${testcase}  # just to validate
-[ ${#testcase} -eq 3 ] && pretend_int_tc=${testcase::-2}
-#echo "pretend_int_tc=${pretend_int_tc}"
+if [ ${#testcase} -eq 3 ]; then
+   pretend_int_tc=${testcase::-2}
+elif [ ${#testcase} -eq 4 ]; then
+   pretend_int_tc=${testcase::-3}
+fi
 if [ ${pretend_int_tc} -le 0 -o ${pretend_int_tc} -gt ${MAX_TESTNUM} ]; then
    echo "${name}: invalid testcase # (${testcase})"
    exit 1
@@ -122,7 +168,7 @@ run_testcase ${testcase}
 
 else   # non-interactive, run all !
 
-  for testcase in 1 2 3.1 3.2 4.1 4.2 4.3 4.4 5.1 5.2 5.3 5.4 6 7 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 8.9 9
+  for testcase in 1 2 3.1 3.2 4.1 4.2 4.3 4.4 5.1 5.2 5.3 5.4 6 7 8.1 8.2 8.3 8.4 8.5 8.6 8.7 8.8 8.9 9 10
   do
     run_testcase ${testcase}
   done

@@ -13,22 +13,21 @@
  * Brief Description:
  * kmembugs_test.c: this source file:
  * This kernel module has buggy functions, each of which represents a simple
- * test case. Some of them are deliberately selected to be ones that are
- * typically NOT caught by KASAN!
+ * test case.
  *
  * debugfs_kmembugs.c:
- * Source for the debugfs file - typically
+ * Source for the debugfs infrastructure to run these test cases; it creates the
+ * debugs file - typically
  *  /sys/kernel/debug/test_kmembugs/lkd_dbgfs_run_testcase
- * Used to execute individual testcases by writing the testcase # (as a string)
+ * used to execute individual testcases by writing the testcase # (as a string)
  * to this pseudo-file.
  *
  * IMP:
  * By default, KASAN will turn off reporting after the very first error
  * encountered; we can change this behavior (and therefore test more easily)
- * by passing the kernel parameter kasan_multi_shot. Even easier, we can simply
- * first invoke the function kasan_save_enable_multi_shot() - which has the
- * same effect - and on unload restore it by invoking the
- * kasan_restore_multi_shot()! (note they require GPL licensing!).
+ * by using the API pair kasan_save_enable_multi_shot() / kasan_restore_multi_shot()
+ * we do just this within the init and cleanup of this module
+ * (note that these APIs require GPL licensing!).
  *
  * For details, please refer the book, Ch 7.
  */
@@ -37,25 +36,24 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>
 #include <linux/mm.h>
+#include <linux/irq_work.h>
 #include <linux/debugfs.h>
+#include "../../convenient.h"
 
 MODULE_AUTHOR("Kaiwan N Billimoria");
 MODULE_DESCRIPTION("kmembugs_test: a few additional test cases for KASAN/UBSAN");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
-/*
-static bool use_kasan_multishot;
-module_param(use_kasan_multishot, bool, 0);
-MODULE_PARM_DESC(use_kasan_multishot, "Set to 1 to run test cases for KASAN (default=0)");
-*/
 #ifdef CONFIG_KASAN
 static bool kasan_multishot;
 #endif
 
 int debugfs_simple_intf_init(void);
 extern struct dentry *gparent;
+static struct irq_work irqwork;
 
 /*
  * All testcase functions are below:
@@ -63,7 +61,7 @@ extern struct dentry *gparent;
  * accessible from the debugfs source file...
  */
 
-/* The UMR - Uninitialized Memory Read - testcase */
+/* The UMR - Uninitialized Memory Read - testcase on kernel stack (local) memory */
 int umr(void)
 {
 	volatile int x, y;
@@ -82,6 +80,22 @@ int umr(void)
 	y = x;
 
 	return x;
+}
+
+/* The UMR - Uninitialized Memory Read - testcase on kernel slab (dynamic) memory */
+int umr_slub(void)
+{
+	volatile char *q = NULL;
+
+	pr_info("testcase 10: simple UMR on slab memory\n");
+	q = kmalloc(32, GFP_KERNEL);
+	if (unlikely(!q))
+		return -ENOMEM;
+	pr_info("q[3] is 0x%x\n", q[3]);
+	print_hex_dump_bytes("q: ", DUMP_PREFIX_OFFSET, (void *)q, 32);
+	kfree((char *)q);
+
+	return 0;
 }
 
 /* The UAR - Use After Return - testcase */
@@ -107,19 +121,26 @@ void *uar(void)
 /* A simple memory leakage testcase 1 */
 void leak_simple1(void)
 {
-	char *p = NULL;
+	volatile char *p = NULL;
 
 	pr_info("testcase 3.1: simple memory leak testcase 1\n");
 	p = kzalloc(1520, GFP_KERNEL);
 	if (unlikely(!p))
 		return;
-
+	pr_info("kzalloc(1520) = 0x%px\n", p);
 	if (0)			// test: ensure it isn't freed
-		kfree(p);
+		kfree((char *)p);
+
+#ifndef CONFIG_MODULES
+	pr_info("kmem_cache_alloc(task_struct) = 0x%px\n",
+		kmem_cache_alloc(task_struct, GFP_KERNEL));
+#endif
+	pr_info("vmalloc(5*1024) = 0x%px\n", vmalloc(5*1024));
 }
 
 /* A simple memory leakage testcase 2.
- * The caller's to free the memory...
+ * *NOTE* The caller's responsible for freeing the memory allocated here!!!
+ * Our test is that the caller doesn't, resulting in a leak.
  */
 void *leak_simple2(void)
 {
@@ -131,82 +152,122 @@ void *leak_simple2(void)
 #define NUM_ALLOC2	8
 	q = kmalloc(NUM_ALLOC2, GFP_KERNEL);
 	for (i = 0; i < NUM_ALLOC2 - 1; i++)
-		q[i] = heehee[i];	// 'x';
+		q[i] = heehee[i];
 	q[i] = '\0';
 
 	return (void *)q;
 }
 
+/*
+ * This function runs in (hardirq) interrupt context
+ */
+void irq_work_leaky(struct irq_work *irqwk)
+{
+	int want_sleep_in_atomic_bug = 0;
+
+	PRINT_CTX();
+	if (want_sleep_in_atomic_bug == 1)
+		pr_debug("kzalloc(129) = 0x%px\n", kzalloc(129, GFP_KERNEL));
+	else
+		pr_debug("kzalloc(129) = 0x%px\n", kzalloc(129, GFP_ATOMIC));
+}
+
+void leak_simple3(void)
+{
+	pr_info("testcase 3.3: simple memory leak testcase 3\n");
+	irq_work_queue(&irqwork);
+}
+
+
 #define READ	0
 #define WRITE	1
 
-/********* TODO / RELOOK : KASAN isn't catching static global mem OOB !!! **************/
-static char global_arr[10];
+/* Observations on KASAN catching OOB accesses on global (static) memory:
+ * a) requires compilation by clang 11 or later
+ * b) the way the internal redzoning and padding seems to work, it appears that
+ *    the first declared global (this depends on how the linker sets it up), may
+ *    not have a left redzone, causing left OOBs to be missed... This is why we
+ *    use three global arrays; we'll pass the middle one; hopefully, it's
+ *    properly redzoned and OOB accesses caught.
+ */
+#define ARRSZ	10
+char global_arr1[ARRSZ];
+char global_arr2[ARRSZ];
+char global_arr3[ARRSZ];
 
 /*
- * OOB on static (compile-time) mem: OOB read/write (right) overflow
- * Covers both read/write overflow on both static global and local/stack memory
+ * OOB on static (compile-time) mem: OOB read/write (right) overflow.
+ * Covers both read/write overflow on both static global and local/stack memory.
+ * The parameter p is a pointer to one of the global memory arrays we have in
+ * this module.
+ * Note: With gcc 10, 11 or clang < 11, KASAN isn't catching static global
+ * memory OOB on read/write underflow!
  */
-int static_mem_oob_right(int mode)
+int global_mem_oob_right(int mode, char *p)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
+	char *volatile ptr = p + ARRSZ + 3; // OOB right
 
 	if (mode == READ) {
-		w = global_arr[ARRAY_SIZE(global_arr) - 2];	// valid and within bounds
-		x = global_arr[ARRAY_SIZE(global_arr) + 2];	// invalid, not within bounds
+		w = *(volatile char *)ptr;	// invalid, OOB right read
+		ptr = p + 3;
+		x = *(volatile char *)ptr;	// valid
 
 		y = local_arr[ARRAY_SIZE(local_arr) - 5];	// valid and within bounds but random content!
-		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, not within bounds
-		/* hey, there's also a lurking UMR defect here! local_arr[] has random content;
-		 * KASAN/UBSAN don't seem to catch it; the compiler does! via a warning:
-		 *  [...]warning: 'arr[20]' is used uninitialized in this function [-Wuninitialized]
-		 *  142 |  x = arr[20]; // valid and within bounds
-		 *      |      ~~~^~~~
-		    ^^^^^^^^^^^^^^^^ ?? NOT getting gcc warning now!!
-		 */
-		//pr_info("global mem: w=0x%x x=0x%x; local mem: y=0x%x z=0x%x\n", w, x, y, z);
-	}
-	else if (mode == WRITE) {
-		global_arr[ARRAY_SIZE(global_arr) - 2] = 'w';	// valid and within bounds
-		global_arr[ARRAY_SIZE(global_arr) + 2] = 'x';	// invalid, not within bounds
+		z = local_arr[ARRAY_SIZE(local_arr) + 5];	// invalid, OOB right read and random
+	} else if (mode == WRITE) {
+		*(volatile char *)ptr = 'x';	// invalid, OOB right write
 
-		local_arr[ARRAY_SIZE(local_arr) - 5] = 'y';	// valid and within bounds but random content!
-		local_arr[ARRAY_SIZE(local_arr) + 5] = 'z';	// invalid, not within bounds
+		p[ARRSZ - 3] = 'w';	// valid and within bounds
+		p[ARRSZ + 3] = 'x';	// invalid, OOB right write
 
+		local_arr[ARRAY_SIZE(local_arr) - 5] = 'y';	// valid and within bounds
+		local_arr[ARRAY_SIZE(local_arr) + 5] = 'z';	// invalid, OOB right write
 	}
 	return 0;
 }
 
 /*
- * OOB on static (compile-time) mem: OOB read/write (left) underflow
- * Covers both read/write overflow on both static global and local/stack memory
+ * OOB on static (compile-time) mem: OOB read/write (left) underflow.
+ * Covers both read/write overflow on both static global and local/stack memory.
+ * The parameter p is a pointer to one of the global memory arrays we have in
+ * this module.
+ * Note: With gcc 10, 11 or clang < 11, KASAN isn't catching static global
+ * memory OOB on read/write underflow!
  */
-int static_mem_oob_left(int mode)
+int global_mem_oob_left(int mode, char *p)
 {
 	volatile char w, x, y, z;
 	volatile char local_arr[20];
+	char *volatile ptr = p - 3; // left OOB
 
 	if (mode == READ) {
-		w = global_arr[-2];	// invalid, not within bounds
-		x = global_arr[2];	// valid, within bounds
+		/* Interesting: this OOB access isn't caught by UBSAN but is caught by KASAN! */
+		w = *(volatile char *)ptr;	// invalid, OOB left read
+
+		/* ... but these below OOB accesses are caught by UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
+		 */
+		x = p[-3];	// invalid, OOB left read
 
 		y = local_arr[-5];	// invalid, not within bounds and random!
 		z = local_arr[5];	// valid, within bounds but random content
-		/* hey, there's also a lurking UMR defect here! local_arr[] has random content;
-		 * KASAN/UBSAN don't seem to catch it; the compiler does! via a warning:
-		 *  [...]warning: 'arr[20]' is used uninitialized in this function [-Wuninitialized]
-		 *  142 |  x = arr[20]; // valid and within bounds
-		 *      |      ~~~^~~~
-		 */
 	} else if (mode == WRITE) {
-		global_arr[-2] = 'w'; // invalid, not within bounds
-		global_arr[2] = 'x';  // valid, within bounds
+		/* Interesting: this OOB access isn't caught by UBSAN but is caught by KASAN! */
+		*(volatile char *)ptr = 'w';
 
-		local_arr[-5] = 'y';  // invalid, not within bounds and random!
-		local_arr[5] = 'z';	  // valid, within bounds but random content
+		/* ... but these below OOB accesses are caught by UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 * And, KASAN compiled with clang 11 or later, can catch the pointer-based OOB above!
+		 */
+		ptr[0] = 'w';  // invalid, OOB left write
+		ptr[5] = 'x';  // valid, within bounds
+
+		local_arr[-5] = 'y'; // invalid, not within bounds
+		local_arr[5] = 'z';	 // valid, within bounds
 	}
-
 	return 0;
 }
 
@@ -214,16 +275,29 @@ int static_mem_oob_left(int mode)
 int dynamic_mem_oob_right(int mode)
 {
 	volatile char *kptr, ch = 0;
-	size_t sz = 123;
+	char *volatile ptr;
+	size_t sz = 32;
 
-	kptr = (char *)kmalloc(sz, GFP_KERNEL);
-	if (!kptr)
+	kptr = kmalloc(sz, GFP_KERNEL);
+	if (unlikely(!kptr))
 		return -ENOMEM;
+	ptr = (char *)kptr + sz + 3; // right OOB
 
-	if (mode == READ)
-		ch = kptr[sz];
-	else if (mode == WRITE)
-		kptr[sz] = 'x';
+	if (mode == READ) {
+		/* Interesting: this OOB access isn't caught by UBSAN but is caught by KASAN! */
+		ch = *(volatile char *)ptr; // invalid, OOB right write
+		/* ... but these below OOB accesses are caught by KASAN/UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 */
+		ch = kptr[sz + 3];	// invalid, OOB right read
+	} else if (mode == WRITE) {
+		/* Interesting: this OOB access isn't caught by UBSAN but is caught by KASAN! */
+		*(volatile char *)ptr = 'x';
+		/* ... but these below OOB accesses are caught by KASAN/UBSAN.
+		 * We conclude that *only* the index-based accesses are caught by UBSAN.
+		 */
+		kptr[sz] = 'x';	// invalid, OOB right write
+	}
 
 	kfree((char *)kptr);
 	return 0;
@@ -233,12 +307,12 @@ int dynamic_mem_oob_right(int mode)
 int dynamic_mem_oob_left(int mode)
 {
 	volatile char *kptr, *ptr, ch = 'x';
-	size_t sz = 123;
+	size_t sz = 32;
 
 	kptr = (char *)kmalloc(sz, GFP_KERNEL);
-	if (!kptr)
+	if (unlikely(!kptr))
 		return -ENOMEM;
-	ptr = kptr - 1;
+	ptr = kptr - 1; // OOB left
 
 	if (mode == READ)
 		ch = *(volatile char *)ptr;
@@ -253,17 +327,17 @@ int dynamic_mem_oob_left(int mode)
 int uaf(void)
 {
 	volatile char *kptr, *ptr;
-	size_t sz = 123;
+	size_t sz = 32;
 
 	kptr = (char *)kmalloc(sz, GFP_KERNEL);
-	if (!kptr)
+	if (unlikely(!kptr))
 		return -ENOMEM;
 	ptr = kptr + 3;
 
 	*(volatile char *)ptr = 'x';
 	kfree((char *)kptr);
 	ptr = kptr + 8;
-	*(volatile char *)ptr = 'y'; // the bug
+	*(volatile char *)ptr = 'y';	// the bug
 
 	return 0;
 }
@@ -272,16 +346,16 @@ int uaf(void)
 int double_free(void)
 {
 	volatile char *kptr, *ptr;
-	size_t sz = 123;
+	size_t sz = 32;
 
 	kptr = (char *)kmalloc(sz, GFP_KERNEL);
-	if (!kptr)
+	if (unlikely(!kptr))
 		return -ENOMEM;
 	ptr = kptr + 3;
 
 	*(volatile char *)ptr = 'x';
 	kfree((char *)kptr);
-	if (1)	// the bug
+	if (1)			// the bug
 		kfree((char *)kptr);
 
 	return 0;
@@ -290,118 +364,103 @@ int double_free(void)
 /*------------------ UBSAN Arithmetic UB testcases ----------------------------
  * All copied verbatim from the kernel src tree here:
  *  lib/test_ubsan.c
-No CONFIG_UBSAN_TRAP=y:
-doesn't catch - except for div by 0...  ??
-sz:
-$ l arch/x86/boot/bzImage
--rw-r--r-- 1 letsdebug letsdebug 18M Nov  6 19:34 arch/x86/boot/bzImage
-$ l vmlinux
--rwxr-xr-x 1 letsdebug letsdebug 1.1G Nov  6 19:34 vmlinux*
-$
-
-With CONFIG_UBSAN_TRAP=y ? No...
-
-sz:
-$ l arch/x86/boot/bzImage
--rw-r--r-- 1 letsdebug letsdebug 17M Nov  7 17:14 arch/x86/boot/bzImage
-$ l vmlinux
--rwxr-xr-x 1 letsdebug letsdebug 1017M Nov  7 17:14 vmlinux*
-$
  */
 void test_ubsan_add_overflow(void)
 {
-    volatile int val = INT_MAX;
+	volatile int val = INT_MAX;
 
-    val += 2;
+	val += 2;
 }
 
 void test_ubsan_sub_overflow(void)
 {
-    volatile int val = INT_MIN;
-    volatile int val2 = 2;
+	volatile int val = INT_MIN;
+	volatile int val2 = 2;
 
-    val -= val2;
+	val -= val2;
 }
 
 void test_ubsan_mul_overflow(void)
 {
-    volatile int val = INT_MAX / 2;
+	volatile int val = INT_MAX / 2;
 
-    val *= 3;
+	val *= 3;
 }
 
 void test_ubsan_negate_overflow(void)
 {
-    volatile int val = INT_MIN;
+	volatile int val = INT_MIN;
 
-    val = -val;
+	val = -val;
 }
 
 void test_ubsan_divrem_overflow(void)
 {
-    volatile int val = 16;
-    volatile int val2 = 0;
+	volatile int val = 16;
+	volatile int val2 = 0;
 
-    val /= val2;
+	val /= val2;
 }
 
 void test_ubsan_shift_out_of_bounds(void)
 {
-    volatile int val = -1;
-    int val2 = 10;
+	volatile int val = -1;
+	int val2 = 10;
 
-    val2 <<= val;
+	val2 <<= val;
 }
 
 void test_ubsan_out_of_bounds(void)
 {
-    volatile int i = 4, j = 5;
-    volatile int arr[4];
+	volatile int i = 4, j = 5;
+	volatile int arr[4];
 
-    arr[j] = i;
+	arr[j] = i;
 }
 
 void test_ubsan_load_invalid_value(void)
 {
-    volatile char *dst, *src;
-    bool val, val2, *ptr;
-    char c = 4;
+	volatile char *dst, *src;
+	bool val, val2, *ptr;
+	char c = 4;
 
-    dst = (char *)&val;
-    src = &c;
-    *dst = *src;
+	dst = (char *)&val;
+	src = &c;
+	*dst = *src;
 
-    ptr = &val2;
-    val2 = val;
+	ptr = &val2;
+	val2 = val;
 }
 
 void test_ubsan_null_ptr_deref(void)
 {
-    volatile int *ptr = NULL;
-    int val;
+	volatile int *ptr = NULL;
+	int val;
 
-    val = *ptr;
+	val = *ptr;
 }
 
 void test_ubsan_misaligned_access(void)
 {
-    volatile char arr[5] __aligned(4) = {1, 2, 3, 4, 5};
-    volatile int *ptr, val = 6;
+	volatile char arr[5] __aligned(4) = { 1, 2, 3, 4, 5 };
+	volatile int *ptr, val = 6;
 
-    ptr = (int *)(arr + 1);
-    *ptr = val;
+	ptr = (int *)(arr + 1);
+	*ptr = val;
 }
 
 void test_ubsan_object_size_mismatch(void)
 {
-    /* "((aligned(8)))" helps this not into be misaligned for ptr-access. */
-    volatile int val __aligned(8) = 4;
-    volatile long long *ptr, val2;
+	/* "((aligned(8)))" helps this not into be misaligned for ptr-access. */
+	volatile int val __aligned(8) = 4;
+	volatile long long *ptr, val2;
 
-    ptr = (long long *)&val;
-    val2 = *ptr;
+	ptr = (long long *)&val;
+	val2 = *ptr;
 }
+
 /*---------------- end UBSAN testcases ---------------------------------------*/
+
 /*
  * Testcase for the [__]copy_[to|from]_user[_inatomic]() routines for OOB accesses.
  * Copied verbatim from lib/test_kasan_module.c
@@ -417,61 +476,66 @@ void test_ubsan_object_size_mismatch(void)
 #define OOB_TAG_OFF (IS_ENABLED(CONFIG_KASAN_GENERIC) ? 0 : KASAN_SHADOW_SCALE_SIZE)
 noinline void oob_copy_user_test(void)
 {
-    char *kmem;
-    char __user *usermem;
-    size_t size = 10;
-    int unused;
+	char *kmem;
+	char __user *usermem;
+	size_t size = 10;
+	int unused;
 
-    kmem = kmalloc(size, GFP_KERNEL);
-    if (!kmem)
-        return;
+	kmem = kmalloc(size, GFP_KERNEL);
+	if (unlikely(!kmem))
+		return;
 
-    usermem = (char __user *)vm_mmap(NULL, 0, PAGE_SIZE,
-                PROT_READ | PROT_WRITE | PROT_EXEC,
-                MAP_ANONYMOUS | MAP_PRIVATE, 0);
-    if (IS_ERR(usermem)) {
-        pr_err("Failed to allocate user memory\n");
-        kfree(kmem);
-        return;
-    }
-
+	usermem = (char __user *)vm_mmap(NULL, 0, PAGE_SIZE,
+					 PROT_READ | PROT_WRITE | PROT_EXEC,
+					 MAP_ANONYMOUS | MAP_PRIVATE, 0);
+	if (IS_ERR(usermem)) {
+		pr_err("Failed to allocate user memory\n");
+		kfree(kmem);
+		return;
+	}
 #if 0
 	/* Skipping these two as the compiler itself (quite cleverly) catches them!
 	 * This is the gcc output: [...]
 	 * In function 'check_copy_size',
-    inlined from 'copy_from_user' at ./include/linux/uaccess.h:191:6,
-    inlined from 'copy_user_test' at /home/letsdebug/Linux-Kernel-Debugging/ch7/kmembugs_test/kmembugs_test.c:482:14:
-./include/linux/thread_info.h:160:4: error: call to '__bad_copy_to' declared with attribute error: copy destination size is too small
-  160 |    __bad_copy_to();
-      |    ^~~~~~~~~~~~~~~
-     */
+	 inlined from 'copy_from_user' at ./include/linux/uaccess.h:191:6,
+	 inlined from 'copy_user_test' at /home/letsdebug/Linux-Kernel-Debugging/ch7/kmembugs_test/kmembugs_test.c:482:14:
+	 ./include/linux/thread_info.h:160:4: error: call to '__bad_copy_to' declared with attribute error: copy destination size is too small
+	 160 |    __bad_copy_to();
+	 |    ^~~~~~~~~~~~~~~
+	 */
 	pr_info("out-of-bounds in copy_from_user()\n");
-    unused = copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+	unused = copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
 
 	// similar gcc o/p as above...
-    pr_info("out-of-bounds in copy_to_user()\n");
-    unused = copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in copy_to_user()\n");
+	unused = copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
 #endif
 
-    pr_info("out-of-bounds in __copy_from_user()\n");
-    unused = __copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in __copy_from_user()\n");
+	unused = __copy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
 
-    pr_info("out-of-bounds in __copy_to_user()\n");
-    unused = __copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in __copy_to_user()\n");
+	unused = __copy_to_user(usermem, kmem, size + 1 + OOB_TAG_OFF);
 
-    pr_info("out-of-bounds in __copy_from_user_inatomic()\n");
-    unused = __copy_from_user_inatomic(kmem, usermem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in __copy_from_user_inatomic()\n");
+	unused = __copy_from_user_inatomic(kmem, usermem, size + 1 + OOB_TAG_OFF);
 
-    pr_info("out-of-bounds in __copy_to_user_inatomic()\n");
-    unused = __copy_to_user_inatomic(usermem, kmem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in __copy_to_user_inatomic()\n");
+	unused = __copy_to_user_inatomic(usermem, kmem, size + 1 + OOB_TAG_OFF);
 
-    pr_info("out-of-bounds in strncpy_from_user()\n");
-    unused = strncpy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
+	pr_info("out-of-bounds in strncpy_from_user()\n");
+	unused = strncpy_from_user(kmem, usermem, size + 1 + OOB_TAG_OFF);
 
-    vm_munmap((unsigned long)usermem, PAGE_SIZE);
-    kfree(kmem);
+	vm_munmap((unsigned long)usermem, PAGE_SIZE);
+	kfree(kmem);
 }
 
+#define CHKCONF(option) do {     \
+	if (IS_ENABLED(option))      \
+		pr_info("%s configured\n", #option); \
+	else  \
+		pr_info("%s NOT configured\n", #option); \
+} while (0)
 
 static int __init kmembugs_test_init(void)
 {
@@ -486,13 +550,12 @@ static int __init kmembugs_test_init(void)
 	kasan_multishot = kasan_save_enable_multi_shot();
 	pr_info("KASAN configured\n");
 #else
-	pr_warn("Attempting to test for KASAN on a non-KASAN-enabled kernel!\n");
-//	return -EINVAL;
+	pr_info("KASAN NOT configured\n");
 #endif
-	if (IS_ENABLED(CONFIG_UBSAN))
-		pr_info("UBSAN configured\n");
-	else
-		pr_info("\n");
+	CHKCONF(CONFIG_UBSAN);
+	CHKCONF(CONFIG_DEBUG_KMEMLEAK);
+
+	init_irq_work(&irqwork, irq_work_leaky);
 
 	stat = debugfs_simple_intf_init();
 	if (stat < 0)

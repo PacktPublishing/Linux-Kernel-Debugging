@@ -11,24 +11,23 @@
  * From: Ch 7: Debugging kernel memory issues
  ****************************************************************
  * Brief Description:
- * kmembugs_test.c:
+ * kmembugs_test.c: this source file:
  * This kernel module has buggy functions, each of which represents a simple
- * test case. Some of them are deliberately selected to be ones that are
- * typically NOT caught by KASAN!
+ * test case.
  *
- * debugfs_kmembugs.c: this source file:
- * Source for the debugfs file - typically
+ * debugfs_kmembugs.c:
+ * Source for the debugfs infrastructure to run these test cases; it creates the
+ * debugs file - typically
  *  /sys/kernel/debug/test_kmembugs/lkd_dbgfs_run_testcase
- * Used to execute individual testcases by writing the testcase # (as a string)
+ * used to execute individual testcases by writing the testcase # (as a string)
  * to this pseudo-file.
  *
  * IMP:
  * By default, KASAN will turn off reporting after the very first error
  * encountered; we can change this behavior (and therefore test more easily)
- * by passing the kernel parameter kasan_multi_shot. Even easier, we can simply
- * first invoke the function kasan_save_enable_multi_shot() - which has the
- * same effect - and on unload restore it by invoking the
- * kasan_restore_multi_shot()! (note they require GPL licensing!).
+ * by using the API pair kasan_save_enable_multi_shot() / kasan_restore_multi_shot()
+ * we do just this within the init and cleanup of this module
+ * (note that these APIs require GPL licensing!).
  *
  * For details, please refer the book, Ch 7.
  */
@@ -46,20 +45,21 @@
 #endif
 
 //----------------- The testcase function prototypes, in order
-int umr(void); // testcase 1
-void *uar(void); // testcase 2
-void leak_simple1(void); // testcase 3.1
-void *leak_simple2(void); // testcase 3.2
+int umr(void);			// testcase 1
+void *uar(void);		// testcase 2
+void leak_simple1(void);	// testcase 3.1
+void *leak_simple2(void);	// testcase 3.2
+void leak_simple3(void);	// testcase 3.3
 
-int static_mem_oob_right(int mode); // testcase 4.1/5.1
-int static_mem_oob_left(int mode); // testcase 4.2/5.2
-int static_mem_oob_left2(int mode); // testcase 4.2/5.2
-int dynamic_mem_oob_right(int mode); // testcase 4.3/5.3
-int dynamic_mem_oob_left(int mode); // testcase 4.4/5.4
+int global_mem_oob_right(int mode, char *p);	// testcase 4.1/5.1
+int global_mem_oob_left(int mode, char *p);	// testcase 4.2/5.2
+int dynamic_mem_oob_right(int mode);	// testcase 4.3/5.3
+int dynamic_mem_oob_left(int mode);	// testcase 4.4/5.4
 
-int uaf(void); // testcase 6
-int double_free(void); // testcase 7
+int uaf(void);			// testcase 6
+int double_free(void);		// testcase 7
 
+// UBSAN testcases 8.x
 void test_ubsan_add_overflow(void);
 void test_ubsan_sub_overflow(void);
 void test_ubsan_mul_overflow(void);
@@ -71,13 +71,18 @@ void test_ubsan_load_invalid_value(void);
 void test_ubsan_misaligned_access(void);
 void test_ubsan_object_size_mismatch(void);
 
-noinline void oob_copy_user_test(void);
+noinline void oob_copy_user_test(void);	// testcase 9
+int umr_slub(void);		// SLUB debug testcase, testcase 10
 //----------------------------------------------
+
 struct dentry *gparent;
 EXPORT_SYMBOL(gparent);
 
-#define MAXUPASS 4
-static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count, loff_t *fpos)
+extern char global_arr1[], global_arr2[], global_arr3[];
+
+#define MAXUPASS 5
+static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, size_t count,
+				  loff_t *fpos)
 {
 	char udata[MAXUPASS];
 	volatile char *res1 = NULL, *res2 = NULL;
@@ -88,10 +93,10 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	}
 	if (copy_from_user(udata, ubuf, count))
 		return -EIO;
-	udata[count-1]='\0';
+	udata[count - 1] = '\0';
 	pr_debug("testcase to run: %s\n", udata);
 
-	/* 
+	/*
 	 * Now udata contains the data passed from userspace - the testcase # to run
 	 * (as a string)
 	 */
@@ -99,24 +104,26 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		umr();
 	else if (!strncmp(udata, "2", 2)) {
 		res1 = uar();
-        pr_info("testcase 2: UAR: res1 = \"%s\"\n",
-            res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
+		pr_info("testcase 2: UAR: res1 = \"%s\"\n",
+			res1 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res1);
 	} else if (!strncmp(udata, "3.1", 4))
 		leak_simple1();
 	else if (!strncmp(udata, "3.2", 4)) {
-		res2 = (char *)leak_simple2(); // caller's expected to free the memory!
-        pr_info(" res2 = \"%s\"\n",
-            res2 == NULL ? "<whoops, it's NULL; UAR!>" : (char *)res2);
-        if (0)      // test: ensure it isn't freed by the caller
-            kfree((char *)res2);
-	} else if (!strncmp(udata, "4.1", 4))
-		static_mem_oob_right(READ);
+		res2 = (char *)leak_simple2();	// caller's expected to free the memory!
+		pr_info(" res2 = \"%s\"\n",
+			res2 == NULL ? "<whoops, it's NULL>" : (char *)res2);
+		if (0)		// test: ensure it isn't freed by us, the caller
+			kfree((char *)res2);
+	} else if (!strncmp(udata, "3.3", 4))
+		leak_simple3();
+	else if (!strncmp(udata, "4.1", 4))
+		global_mem_oob_right(READ, global_arr2);
 	else if (!strncmp(udata, "4.2", 4))
-		static_mem_oob_right(WRITE);
+		global_mem_oob_right(WRITE, global_arr2);
 	else if (!strncmp(udata, "4.3", 4))
-		static_mem_oob_left(READ);
+		global_mem_oob_left(READ, global_arr2);
 	else if (!strncmp(udata, "4.4", 4))
-		static_mem_oob_left(WRITE);
+		global_mem_oob_left(WRITE, global_arr2);
 	else if (!strncmp(udata, "5.1", 4))
 		dynamic_mem_oob_right(READ);
 	else if (!strncmp(udata, "5.2", 4))
@@ -140,7 +147,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 	else if (!strncmp(udata, "8.4", 4))
 		test_ubsan_divrem_overflow();
 	else if (!strncmp(udata, "8.5", 4))
-	    test_ubsan_shift_out_of_bounds();
+		test_ubsan_shift_out_of_bounds();
 	else if (!strncmp(udata, "8.6", 4))
 		test_ubsan_out_of_bounds();
 	else if (!strncmp(udata, "8.7", 4))
@@ -151,13 +158,15 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		test_ubsan_object_size_mismatch();
 	else if (!strncmp(udata, "9", 2))
 		oob_copy_user_test();
+	else if (!strncmp(udata, "10", 3))
+		umr_slub();
 	else
 		pr_warn("Invalid testcase # (%s) passed\n", udata);
 
 	return count;
 }
 
-static struct file_operations dbgfs_fops = {
+static const struct file_operations dbgfs_fops = {
 	.write = dbgfs_run_testcase,
 };
 
@@ -184,8 +193,7 @@ int debugfs_simple_intf_init(void)
 	 * function on write (via the classic file_operations structure).
 	 */
 #define DBGFS_FILE	"lkd_dbgfs_run_testcase"
-	file1 =
-	    debugfs_create_file(DBGFS_FILE, 0200, gparent, NULL, &dbgfs_fops);
+	file1 = debugfs_create_file(DBGFS_FILE, 0200, gparent, NULL, &dbgfs_fops);
 	if (!file1) {
 		pr_info("debugfs_create_file failed, aborting...\n");
 		stat = PTR_ERR(file1);
