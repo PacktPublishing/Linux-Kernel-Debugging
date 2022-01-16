@@ -34,6 +34,14 @@ static bool race_2plain_w;
 module_param(race_2plain_w, bool, 0644);
 MODULE_PARM_DESC(race_2plain_w, "Trigger a data race due to plain writes on same address");
 
+static int iter1 = 10000;
+module_param(iter1, int, 0644);
+MODULE_PARM_DESC(iter1, "# of times to loop in workfunc 1");
+
+static int iter2 = 10000;
+module_param(iter2, int, 0644);
+MODULE_PARM_DESC(iter2, "# of times to loop in workfunc 2");
+
 static struct st_ctx {
 	struct work_struct work1, work2;
 	u64 x, y, z, data;
@@ -50,10 +58,8 @@ static void do_the_work1(struct work_struct *work1)
 	PRINT_CTX();
 	if (race_2plain_w) {
 		pr_info("data race: 2 plain writes:\n");
-		for (i=0; i<10000; i++) {
+		for (i=0; i<iter1; i++)
 			gctx->data = bogus + i; /* unprotected plain write on global */
-			mdelay(1);
-		}
 	}
 }
 
@@ -63,20 +69,19 @@ static void do_the_work1(struct work_struct *work1)
 static void do_the_work2(struct work_struct *work2)
 {
 	int i;
+	u64 bogus = 98000;
 
 	PRINT_CTX();
 	if (race_2plain_w) {
 		pr_info("data race: 2 plain writes:\n");
-		for (i=0; i<10000; i++) {
-			gctx->data = (u64)gctx->y + i; /* unprotected plain write on global */
-			mdelay(1);
-		}
+		for (i=0; i<iter2; i++)
+			gctx->data = bogus - i; /* unprotected plain write on global */
 	}
 }
 
 static int setup_work(void)
 {
-	pr_info("global data item address: %px\n", &gctx->data);
+	pr_info("global data item address: 0x%px\n", &gctx->data);
 
 	/* Initialize our workqueue #1 */
 	INIT_WORK(&gctx->work1, do_the_work1);
@@ -103,7 +108,7 @@ static int __init kcsan_datarace_init(void)
 	gctx->data = 1;
 	pr_info("Setting up a deliberate data race via our workqueue functions:\n");
 	if (race_2plain_w == 1)
-		pr_info("2 plain writes\n");
+		pr_info("2 plain writes; #loops in workfunc1:%d workfunc2:%d\n", iter1, iter2);
 
 	setup_work();
 	return 0;		/* success */
