@@ -82,7 +82,7 @@ ifeq (${MYDEBUG}, y)
   # man gcc: "...-Og may result in a better debugging experience"
 else
   INSTALL_MOD_STRIP := 1
-  #ccflags-y   += --strip-debug
+  ccflags-y   += -UDEBUG
 endif
 # We always keep the dynamic debug facility enabled; this allows us to turn
 # dynamically turn on/off debug printk's later... To disable it simply comment
