@@ -94,8 +94,7 @@ static int __init try_oops_init(void)
 	} else {
 		pr_info("Generating Oops by attempting to write to a random invalid kernel address in NULL trap page\n");
 		get_random_bytes(&page0_randptr, sizeof(unsigned int));
-		page0_randptr %= PAGE_SIZE;
-		bad_kva = page0_randptr;
+		bad_kva = (page0_randptr %= PAGE_SIZE);
 	}
 	pr_info("bad_kva = 0x%lx; now writing to it...\n", bad_kva);
 	*(unsigned long *)bad_kva = 0xdead;
