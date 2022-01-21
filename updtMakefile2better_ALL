@@ -15,7 +15,7 @@ do
   # ok, process
   cd ${lkmdir} || {
     echo "cd failed! ??"
-	continue
+    continue
   }
   [ ! -f Makefile ] && continue
   echo "$i. ============================================================================="
@@ -25,8 +25,8 @@ do
   # get C source filename
   numc=$(ls *.c|wc -w)
   [ ${numc} -le 0 -o ${numc} -gt 1 ] && {
-     echo "None -or- >1 C soruce files here, skipping dir..."
-	 continue
+     echo "None -or- >1 C source files here, skipping dir..."
+     continue
   }
   csrc=$(ls *.c)
   #echo "csrc=${csrc} nm=${csrc::-2}"

@@ -8,8 +8,8 @@ ORIG=${SRC}/Makefile.better
   exit 1
 }
 make clean
-mv Makefile Makefile.old 2>/dev/null
-cp ${ORIG} Makefile
+mv -f Makefile Makefile.old 2>/dev/null
+cp -f ${ORIG} Makefile
 
 fname=$(echo "${1}" | sed -e 's/[]$.*[\^]/\\&/g' )
 sed -i -e "s/FNAME_C := .*/FNAME_C := ${fname}/" Makefile
