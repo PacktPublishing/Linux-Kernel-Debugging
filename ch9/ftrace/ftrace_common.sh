@@ -25,21 +25,23 @@ reset_ftrace()
 {
 local f
 
-echo 1408 > buffer_size_kb
+echo 1408 > buffer_size_kb  # 1408 KB is the default (5.10)
 
-for f in trace tracing_cpumask
-do
- echo "resetting $f"
- echo > $f 
-done
+# wipe out any existing trace data
+echo > trace
 
-for f in set_*
+# Tip: do NOT attempt to reset tracing_cpumask by 'echo > tracing_cpumask';
+# Causes trace to fail... as a value of 0x0 as cpu bitmask effectively disables
+# tracing!
+
+for f in set_ftrace_filter set_ftrace_notrace set_ftrace_notrace_pid set_ftrace_pid
 do
  echo "resetting $f"
  echo > $f 
 done
 
 # trace_options to defaults (as of 5.10.60)
+echo "resetting trace_options to defaults (as of 5.10.60)"
 echo print-parent > trace_options 
 echo nosym-offset > trace_options
 echo nosym-addr > trace_options
@@ -67,8 +69,8 @@ echo function-trace > trace_options
 echo nofunction-fork > trace_options
 echo nodisplay-graph > trace_options
 echo nostacktrace > trace_options
-#echo notest_nop_accept > trace_options
-#echo notest_nop_refuse > trace_options
+echo notest_nop_accept > trace_options
+echo notest_nop_refuse > trace_options
 
 # options/funcgraph-*  to defaults
 echo "resetting options/funcgraph-*"
@@ -88,4 +90,3 @@ f=$(which reset-ftrace-perf)
   $f -q
 }
 }
-
