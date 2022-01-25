@@ -21,13 +21,22 @@ name=$(basename $0)
   echo "${name}: needs root."
   exit 1
 }
+source $(dirname $0)/ftrace_common.sh || {
+ echo "Couldn't source required file $(dirname $0)/ftrace_common.sh"
+ exit 1
+}
+REPDIR=~/ftrace_reports
+FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d_%H%M%S).txt
 
 cd /sys/kernel/tracing
+reset_ftrace
 
 echo function_graph > current_tracer
 echo 1 > options/funcgraph-proc
 echo 1 > options/latency-format
 
 echo 1 > tracing_on ; sleep 1; echo 0 > tracing_on
-mkdir -p ~/ftrc 2>/dev/null
-cp trace ~/ftrc/ftrc_run2_$(date +%Y%m%d_%H%M%S).txt
+mkdir -p ${REPDIR} 2>/dev/null
+cp trace ${FTRC_REP}
+ls -lh ${FTRC_REP}
+exit 0
