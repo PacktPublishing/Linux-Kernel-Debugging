@@ -11,6 +11,8 @@
 # From: Ch 9: Tracing the kernel flow
 #***************************************************************
 # Brief Description:
+# Very simple (raw) usage of kernel ftrace; traces whatever executes within
+# the kernel for 1 second.
 #
 # For details, please refer the book, Ch 9.
 #------------------------------------------------------------------------------
