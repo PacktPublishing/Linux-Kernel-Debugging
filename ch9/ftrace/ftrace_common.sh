@@ -25,6 +25,8 @@ reset_ftrace()
 {
 local f
 
+# TODO / check: use trace-cmd reset only ??
+
 echo 1408 > buffer_size_kb  # 1408 KB is the default (5.10)
 
 # wipe out any existing trace data
@@ -69,8 +71,8 @@ echo function-trace > trace_options
 echo nofunction-fork > trace_options
 echo nodisplay-graph > trace_options
 echo nostacktrace > trace_options
-echo notest_nop_accept > trace_options
-echo notest_nop_refuse > trace_options
+#echo notest_nop_accept > trace_options
+#echo notest_nop_refuse > trace_options
 
 # options/funcgraph-*  to defaults
 echo "resetting options/funcgraph-*"
