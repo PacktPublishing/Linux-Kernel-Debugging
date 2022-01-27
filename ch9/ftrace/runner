@@ -1,0 +1,21 @@
+#!/bin/bash
+# runner
+
+# A wrapper to run a given command. Will exec the given command upon a trigger.
+# This is only to ensure we know the PID of the process in advance.
+# (Leveraged by our ftrace scripts).
+name=$(basename $0)
+TRIGGERFILE=/tmp/${name}
+
+if [ $# -eq 0 ]; then
+  echo "usage: ${name} command"
+  exit 1
+fi
+cmd="$@"
+
+while [ ! -f ${TRIGGERFILE} ]; do
+  sleep .5
+done
+echo "> ${name}:$$: triggered"
+# Exec the given command on CPU 0
+exec taskset 01 "$@"
