@@ -31,10 +31,12 @@ FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d_%H%M%S).txt
 cd /sys/kernel/tracing
 reset_ftrace
 
+grep -q -w function_graph available_tracers || die "tracer specified function_graph unavailable"
 echo function_graph > current_tracer
 echo 1 > options/funcgraph-proc
 echo 1 > options/latency-format
 
+echo "Tracing with function_graph for 1s ..."
 echo 1 > tracing_on ; sleep 1; echo 0 > tracing_on
 mkdir -p ${REPDIR} 2>/dev/null
 cp trace ${FTRC_REP}

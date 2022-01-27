@@ -79,15 +79,15 @@ echo "[+] setting filters for networking funcs only...
  Patience... the string matching can take a while ..."
 
 # Trying to match any string doesn't always work (too big?)
-#  'net' for eg., fails... (so does 'sock', 'ip')
+#  'net' for eg., fails... (so does 'sock', 'ip','xmit')
 #echo " 'net' in available_filter_functions"
 #echo $(grep -i net available_filter_functions) >> set_ftrace_filter
 echo " 'tcp' in available_filter_functions"
 echo $(grep -i tcp available_filter_functions) >> set_ftrace_filter
 echo " 'udp' in available_filter_functions"
 echo $(grep -i udp available_filter_functions) >> set_ftrace_filter
-echo " 'xmit' in available_filter_functions"
-echo $(grep -i xmit available_filter_functions) >> set_ftrace_filter
+#echo " 'xmit' in available_filter_functions"
+#echo $(grep -i xmit available_filter_functions) >> set_ftrace_filter
 
 echo "# of functions now being traced: $(wc -l set_ftrace_filter|cut -f1 -d' ')"
 
@@ -110,12 +110,13 @@ echo "!eaf*" >> set_ftrace_filter
 echo "# of functions now being traced: $(wc -l set_ftrace_filter|cut -f1 -d' ')"
 
 #---FYI---
-# hey, fyi, it's so much more elegant and simple with trace-cmd:
+# hey, fyi, it's so much more elegant, simple and faster with trace-cmd:
 #  sudo trace-cmd record -e net -e sock -F ping -c1 packtpub.com
 #  sudo trace-cmd report -l -i trace.dat > reportfile.txt
-# The output report here is ~ 4 KB (compared to ~ 574 MB for this raw ftrace report!)
+# The output report here is ~ 10 MB (compared to ~ 574 MB for this raw ftrace report!)
 #
-# Try https://github.com/kaiwan/trccmd to make it even more flexible!
+# A wrapper over trace-cmd: https://github.com/kaiwan/trccmd
+# to make it even more flexible! Try doing the same with our trccmd wrapper util.
 #---------
 
 # filter commands: put these after all other filtering's done;
