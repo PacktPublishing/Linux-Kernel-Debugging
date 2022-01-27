@@ -25,7 +25,12 @@ reset_ftrace()
 {
 local f
 
-# TODO / check: use trace-cmd reset only ??
+# Check: if trace-cmd is installed, use it to reset
+# But it doesn't auto reset everything we want, so let the other stuff also get reset
+if which trace-cmd >/dev/null ; then
+  echo "trace-cmd reset"
+  trace-cmd reset
+fi
 
 echo 1408 > buffer_size_kb  # 1408 KB is the default (5.10)
 
@@ -91,4 +96,11 @@ f=$(which reset-ftrace-perf)
   echo "running '$f -q' now..."
   $f -q
 }
+}
+
+runcmd()
+{
+	[ $# -eq 0 ] && return
+	echo "$@"
+	eval "$@"
 }
