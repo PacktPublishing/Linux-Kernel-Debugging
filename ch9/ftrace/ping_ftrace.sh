@@ -18,11 +18,11 @@
 # easier and elegant to use trace-cmd (or our wrapper over it, trccmd).
 # A choice of filtering is available (though manually), two ways:
 #  (a) you can filter either the regular way (via the available_filter_functions
-# pseudofile), or
+#      pseudofile), or
 #  (b) via the set_event interface
 # (Ref: https://www.kernel.org/doc/html/v5.10/trace/events.html#via-the-set-event-interface).
 # The first gives a much more detailed trace, showing all relevant functions
-# (here, the networking ones), but at the cost of being much slower.
+# (here, the networking ones), but is a little more work to setup.
 #
 # For details, please refer the book, Ch 9.
 #------------------------------------------------------------------------------
@@ -45,18 +45,49 @@ usage() {
  You can use globbing; f.e. ${name} kmem_cache*"
 }
 
-# filterfunc()
-# Filter only these functions (into set_ftrace_filter) and, when employing
-# the function_graph tracer, via set_graph_function
+# filterfunc_idx()
+# Index-based filtering! *much* faster than the usual string-based filtering.
+# Filter only these functions (into set_ftrace_filter) using the index
+# position of the function within the available_filter_functions interface.
 # Parameters:
 #  $1 : function (globs ok) [required]
 #  $2 : description string  [optional]
-filterfunc()
+filterfunc_idx()
+{
+[ $# -lt 1 ] && return
+#[ $# -ge 2 ] && echo "$2" || echo " $1 in available_filter_functions"
+
+local func
+for func in "$@"
+do
+  echo $(grep -i -n ${func} available_filter_functions |cut -f1 -d':'|tr '\n' ' ') >> set_ftrace_filter
+done
+}
+
+# Older string-based filtering; works but is much slower (than above index-based filtering)
+filterfunc_str()
 {
 [ $# -lt 1 ] && return
 [ $# -ge 2 ] && echo "$2" || echo " $1 in available_filter_functions"
 echo $(grep -i $1 available_filter_functions) >> set_ftrace_filter
 echo $(grep -i $1 available_filter_functions) >> set_graph_function
+}
+
+# filterfunc_remove()
+# Filter to REMOVE these functions
+# Parameters:
+#  $1 : function (globs ok) [required]
+##  $2 : description string  [optional]
+filterfunc_remove()
+{
+[ $# -lt 1 ] && return
+
+local func
+for func in "$@"
+do
+  echo "!${func}" >> set_ftrace_filter
+  echo "${func}" >> set_graph_notrace
+done
 }
 
 
@@ -90,7 +121,8 @@ BUFSZ_PCPU_MB=50
 echo "[+] setting buffer size to ${BUFSZ_PCPU_MB} MB / cpu"
 echo $((BUFSZ_PCPU_MB*1024)) > buffer_size_kb
 
-# filter?
+#---------------------- Function Filtering ------------------------------------
+# filter args?
 echo > set_ftrace_filter   # reset
 if [ ! -z "${FUNC2TRC}" ]; then
   grep -q "${FUNC2TRC}" available_filter_functions || die "function(s) specified aren't available for tracing"
@@ -106,29 +138,24 @@ fi
 # They're mutually exclusive;if you set FILTER_VIA_AVAIL_FUNCS to 1, then we
 # filter via (a), else via (b).
 # The first gives a much more detailed trace, showing all relevant functions
-# (here, the networking ones), but at the cost of being much slower!!!
+# (here, the networking ones), but needs a little more work (index-based filtering)
+# to keep it quick.
 FILTER_VIA_AVAIL_FUNCS=1
 
+echo "[+] Function filtering:"
 if [ ${FILTER_VIA_AVAIL_FUNCS} -eq 1 ] ; then
  # Filter on any network functions: (simplistic)
  # 'Inclusive' approach - include and trace only these functions
- echo "[+] Regular filtering (via available_filter_functions):
- Setting filters for networking funcs only...
- Patience... the string matching can take a while ..."
+ echo " Regular filtering (via available_filter_functions):
+ Setting filters for networking funcs only..."
+ # This is pretty FAST and yields good detail!
+ filterfunc_idx read write net packet_ sock sk_ tcp udp skb netdev \
+   netif_ napi icmp "^ip_" "xmit$" dev_ qdisc
 
- # Trying to match any string doesn't always work (too big?)
- #  'net', '^ip_' for eg., fails...
- # This is SLOW but yields good detail!
- #filterfunc net
- filterfunc sock
- filterfunc tcp
- filterfunc udp
- filterfunc netdev
- #filterfunc "^ip_" #?
- filterfunc "xmit$"
 else # filter via the set_event interface
+
  # This is FAST but doesn't yield as good detail!
- echo "[+] Alternate event-based filtering (via set_event):"
+ echo " Alternate event-based filtering (via set_event):"
  echo 'net:*' >> set_event
  echo 'sock:*' >> set_event
  echo 'skb:*' >> set_event
@@ -139,34 +166,15 @@ else # filter via the set_event interface
  echo 'syscalls:*' >> set_event
 fi
 
-# Get rid of unrequired funcs! This is very fast
-echo "!*idle*" >> set_ftrace_filter ; echo "*idle*" >> set_graph_notrace
-echo "!tick_nohz_idle_stop_tick" >> set_ftrace_filter ; echo "tick_nohz_idle_stop_tick" >> set_graph_notrace
-echo "!*IPI*" >> set_ftrace_filter ; echo "*IPI*" >> set_graph_notrace
-echo "!*ipi*" >> set_ftrace_filter ; echo "*ipi*" >> set_graph_notrace
-echo "!*ipc*" >> set_ftrace_filter ; echo "*ipc*" >> set_graph_notrace
-echo "!*xen*" >> set_ftrace_filter ; echo "*xen*" >> set_graph_notrace
-echo "!*pipe*" >> set_ftrace_filter ; echo "*pipe*" >> set_graph_notrace
-echo "!*cipher*" >> set_ftrace_filter ; echo "*cipher*" >> set_graph_notrace
-echo "!*chip*" >> set_ftrace_filter ; echo "*chip*" >> set_graph_notrace
-echo "!*__x32*" >> set_ftrace_filter ; echo "*__x32*" >> set_graph_notrace
-echo "!*__ia32*" >> set_ftrace_filter ; echo "*__ia32*" >> set_graph_notrace
-echo "!*__x64*" >> set_ftrace_filter ; echo "*__x64*" >> set_graph_notrace
-echo "!*bpf*" >> set_ftrace_filter ; echo "*bpf*" >> set_graph_notrace
-#echo "!*selinux*" >> set_ftrace_filter ; #echo "!*selinux*" >> set_graph_function
-echo "!*calipso*" >> set_ftrace_filter ; echo "*calipso*" >> set_graph_notrace
-echo "!eaf*" >> set_ftrace_filter ; echo "eaf*" >> set_graph_notrace
+#--- Get rid of unrequired funcs! This is very fast
+echo "[+] filter: remove unwanted functions"
+filterfunc_remove "*idle*" "tick_nohz_idle_stop_tick" "*__rcu_*" \
+  "*down_write*" "*up_write*" "*down_read*" "*up_read*" \
+  "*get_task_policy*" "*kthread_blkcg*" "*kthread_blkcg*" \
+  "*IPI*" "*ipi*" "*ipc*" "*xen*" "*pipe*" "*cipher*" "*chip*" "*__x32*" \
+  "*vma*" "*__ia32*" "*__x64*" "*bpf*" "*calipso*" "eaf*" #"*selinux*"
 
 echo "# of functions now being traced: $(wc -l set_ftrace_filter|cut -f1 -d' ')"
-
-#---FYI---
-# hey, fyi, it's so much more elegant, simple and faster with trace-cmd:
-#  sudo trace-cmd record -e net -e sock -F ping -c1 packtpub.com
-#  sudo trace-cmd report -l -i trace.dat > reportfile.txt
-#
-# Even simpler, use our wrapper over trace-cmd: https://github.com/kaiwan/trccmd
-# We do the same with our trccmd wrapper util (ch9/tracecmd/trc-cmd*.sh).
-#---------
 
 # filter commands: put these after all other filtering's done;
 # 'a command isn't the same as a filter'!
@@ -186,7 +194,6 @@ CMD="ping -c1 packtpub.com"
 TRIGGER_FILE=/tmp/runner
 CPUMASK=2
 
-echo function-fork > trace_options  # trace any children as well
 $(dirname $0)/runner ${CMD} &
 PID=$(pgrep --newest runner)
 [ -z "${PID}" ] && {
