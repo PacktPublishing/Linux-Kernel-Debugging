@@ -116,8 +116,16 @@ echo 1 > options/latency-format
 # display the abs time
 echo 1 > options/funcgraph-abstime
 
-# buffer size
-BUFSZ_PCPU_MB=50
+#--- per cpu buffer size
+# Try and use 5% of available memory
+# TODO/RELOOK:
+# Careful! This isn't tested... if the amt of RAM isn't v large but the
+# number of CPU cores is, it can lead to problems
+PERCENT2USE=5
+AVAILMEM_KB=$(grep "^MemAvailable" /proc/meminfo |awk '{print $2}')
+BUFSZ_PCPU_KB=$((${AVAILMEM_KB}*${PERCENT2USE}/100))
+BUFSZ_PCPU_MB=$((${BUFSZ_PCPU_KB}/1024))
+[ ${BUFSZ_PCPU_MB} -le 1 ] && BUFSZ_PCPU_MB=2
 echo "[+] setting buffer size to ${BUFSZ_PCPU_MB} MB / cpu"
 echo $((BUFSZ_PCPU_MB*1024)) > buffer_size_kb
 
@@ -202,23 +210,37 @@ PID=$(pgrep --newest runner)
    die "Couldn't get PID of runner wrapper process"
 }
 
-# filter by PID and CPU (1)
-echo ${PID} > set_ftrace_pid # trace only what this process (and it's children) do
-echo ${PID} > set_event_pid  # trace only what this process (and it's children) do
+# Filter by PID and CPU (1)
+# trace only what this process (and it's children) do
 echo 0 > set_ftrace_notrace_pid
+echo function-fork > trace_options  # trace any children as well
+[ ${FILTER_VIA_AVAIL_FUNCS} -eq 1 ] && echo ${PID} > set_ftrace_pid || \
+   echo ${PID} > set_event_pid
 echo ${CPUMASK} > tracing_cpumask
 
 touch ${TRIGGER_FILE} # doing this triggers the command and it runs
 
 echo "[+] Tracing PID ${PID} on CPU 0 now ..."
 echo 1 > tracing_on
+ # So, whatever happens here in the kernel gets traced; thus, it's not
+ # completely exclusive to only our process of interest; other stuff can get
+ # caught in the trace...
 wait ${PID}
 echo 0 > tracing_on
-#echo 1 > tracing_on ; ping -c1 packtpub.com; echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
+# older way:
+#echo 1 > tracing_on ; ping -c1 packtpub.com; echo 0 > tracing_on
 
 mkdir -p ${REPDIR} 2>/dev/null
 cp -f trace ${FTRC_REP} || die "report generation failed"
 echo "Ftrace report: $(ls -lh ${FTRC_REP})"
 
+#---FYI---
+# hey, think on this, it's so much simpler with trace-cmd(1):
+#  sudo trace-cmd record -e net -e sock -F ping -c1 packtpub.com
+#  sudo trace-cmd report -l -i trace.dat > reportfile.txt
+#
+# Even simpler, use our wrapper over trace-cmd: https://github.com/kaiwan/trccmd
+# We do the same with our trccmd wrapper util (ch9/tracecmd/trc-cmd*.sh).
+#---------
 exit 0
