@@ -38,6 +38,7 @@ source $(dirname $0)/ftrace_common.sh || {
 REPDIR=~/ftrace_reports
 FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d).txt
 #FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d_%H%M%S).txt
+TOP=$(pwd)
 
 usage() {
  echo "Usage: ${name} function(s)-to-trace
@@ -208,7 +209,7 @@ CMD="ping -c1 packtpub.com"
 TRIGGER_FILE=/tmp/runner
 CPUMASK=2
 
-$(dirname $0)/runner ${CMD} &
+${TOP}/runner ${CMD} &
 PID=$(pgrep --newest runner)
 [ -z "${PID}" ] && {
    rm -f ${TRIGGER_FILE}
