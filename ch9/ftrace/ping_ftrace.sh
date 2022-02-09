@@ -110,11 +110,16 @@ echo "[+] setting options"
 # display the process context
 echo 1 > options/funcgraph-proc
 # display the name of the terminating function
-echo 1 > options/funcgraph-tail
+#echo 1 > options/funcgraph-tail
 # display the 4 column latency trace info (f.e. dNs1)
 echo 1 > options/latency-format
-# display the abs time
+# display the timestamp
 echo 1 > options/funcgraph-abstime
+
+# Can limit the depth
+#echo 3 > max_graph_depth
+# Stack trace to see max stack utilization
+#echo 1 > /proc/sys/kernel/stack_tracer_enabled
 
 #--- per cpu buffer size
 # Try and use 5% of available memory
@@ -130,7 +135,7 @@ echo "[+] setting buffer size to ${BUFSZ_PCPU_MB} MB / cpu"
 echo $((BUFSZ_PCPU_MB*1024)) > buffer_size_kb
 
 #---------------------- Function Filtering ------------------------------------
-# filter args?
+# Any specific funcs to trace?
 echo > set_ftrace_filter   # reset
 if [ ! -z "${FUNC2TRC}" ]; then
   grep -q "${FUNC2TRC}" available_filter_functions || die "function(s) specified aren't available for tracing"
@@ -195,6 +200,7 @@ if lsmod|grep ${KMOD} ; then
   echo ":mod:${KMOD}" >> set_ftrace_filter
 fi
 
+#--- Running the target program and tracing it --------------------------------
 echo "[+] Setting up wrapper runner process now..."
 CMD="ping -c1 packtpub.com"
 
@@ -213,19 +219,24 @@ PID=$(pgrep --newest runner)
 # Filter by PID and CPU (1)
 # trace only what this process (and it's children) do
 echo 0 > set_ftrace_notrace_pid
-echo function-fork > trace_options  # trace any children as well
+echo function-fork >> trace_options  # trace any children as well
 [ ${FILTER_VIA_AVAIL_FUNCS} -eq 1 ] && echo ${PID} > set_ftrace_pid || \
    echo ${PID} > set_event_pid
 echo ${CPUMASK} > tracing_cpumask
 
 touch ${TRIGGER_FILE} # doing this triggers the command and it runs
 
-echo "[+] Tracing PID ${PID} on CPU 0 now ..."
+echo "[+] Tracing PID ${PID} on CPU 1 now ..."
+echo markers > trace_options
 echo 1 > tracing_on
  # So, whatever happens here in the kernel gets traced; thus, it's not
  # completely exclusive to only our process of interest; other stuff can get
  # caught in the trace...
+ # Using a *trace marker* (as below) is very useful! We can search for the string
+ # in the trace report and figure where the interesting portion actually is!
+echo "@@@ START tracing ping PID ${PID} on CPU 1 now" > trace_marker
 wait ${PID}
+echo "@@@ END tracing ping PID ${PID} on CPU 1 now" > trace_marker
 echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
 # older way:
