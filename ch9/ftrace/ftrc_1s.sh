@@ -1,5 +1,5 @@
 #!/bin/bash
-# ch9/ftrace/ftrc_run2.sh
+# ch9/ftrace/ftrc_1s.sh
 # ***************************************************************
 # This program is part of the source code released for the book
 #  "Linux Kernel Debugging"

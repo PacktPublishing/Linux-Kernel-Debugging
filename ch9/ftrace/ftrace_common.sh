@@ -90,6 +90,8 @@ echo 0 > options/funcgraph-overrun
 echo 1 > options/funcgraph-proc
 echo 0 > options/funcgraph-tail
 
+echo 0 > max_graph_depth
+
 # perf-tools ftrace reset script 
 f=$(which reset-ftrace-perf)
 [ ! -z "$f" ] && {
