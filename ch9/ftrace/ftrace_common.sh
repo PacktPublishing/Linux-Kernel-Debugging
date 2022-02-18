@@ -28,7 +28,7 @@ local f
 # Check: if trace-cmd is installed, use it to reset
 # But it doesn't auto reset everything we want, so let the other stuff also get reset
 if which trace-cmd >/dev/null ; then
-  echo "trace-cmd reset"
+  echo "trace-cmd reset    (patience, pl...)"
   trace-cmd reset
 fi
 

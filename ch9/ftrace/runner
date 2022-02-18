@@ -7,7 +7,7 @@
 name=$(basename $0)
 
 # Keep these vars in sync with the 'ping_ftrace.sh' script!
-TRIGGERFILE=/tmp/${name}
+TRIGGER_FILE=/tmp/${name}
 CPUMASK=2
 
 if [ $# -eq 0 ]; then
@@ -15,7 +15,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-while [ ! -f ${TRIGGERFILE} ]; do
+while [ ! -f ${TRIGGER_FILE} ]; do
   sleep .5
 done
 echo "> ${name}:$$: triggered"

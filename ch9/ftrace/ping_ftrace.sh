@@ -35,7 +35,7 @@ source $(dirname $0)/ftrace_common.sh || {
  echo "Couldn't source required file $(dirname $0)/ftrace_common.sh"
  exit 1
 }
-REPDIR=~/ftrace_reports
+REPDIR=$(pwd)/ftrace_reports
 FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d).txt
 #FTRC_REP=${REPDIR}/${name}_$(date +%Y%m%d_%H%M%S).txt
 TOP=$(pwd)
@@ -76,9 +76,7 @@ echo $(grep -i $1 available_filter_functions) >> set_graph_function
 
 # filterfunc_remove()
 # Filter to REMOVE these functions
-# Parameters:
-#  $1 : function (globs ok) [required]
-##  $2 : description string  [optional]
+# Parameters:  $1 : function (globs ok) [required]
 filterfunc_remove()
 {
 [ $# -lt 1 ] && return
@@ -86,8 +84,8 @@ filterfunc_remove()
 local func
 for func in "$@"
 do
-  echo "!${func}" >> set_ftrace_filter
-  echo "${func}" >> set_graph_notrace
+  echo "!${func}" >> set_ftrace_filter || echo "removing ${func} failed"
+  echo "${func}" >> set_graph_notrace || echo "removing ${func} failed"
 done
 }
 
@@ -125,7 +123,7 @@ echo 1 > options/funcgraph-abstime
 #--- per cpu buffer size
 # Try and use 5% of available memory
 # TODO/RELOOK:
-# Careful! This isn't tested... if the amt of RAM isn't v large but the
+# Careful! This isn't well tested... if the amt of RAM isn't v large but the
 # number of CPU cores is, it can lead to problems
 PERCENT2USE=5
 AVAILMEM_KB=$(grep "^MemAvailable" /proc/meminfo |awk '{print $2}')
@@ -181,12 +179,14 @@ else # filter via the set_event interface
 fi
 
 #--- Get rid of unrequired funcs! This is very fast
+# NOTE: depending on your particular kernel ver and config, this list of funcs
+# to remove can vary.
 echo "[+] filter: remove unwanted functions"
-filterfunc_remove "*idle*" "tick_nohz_idle_stop_tick" "*__rcu_*" \
+filterfunc_remove "*idle*" "tick_nohz_idle_stop_tick" "rcu_*" "*__rcu_*" \
   "*down_write*" "*up_write*" "*down_read*" "*up_read*" \
   "*get_task_policy*" "*kthread_blkcg*" "*kthread_blkcg*" \
   "*IPI*" "*ipi*" "*ipc*" "*xen*" "*pipe*" "*cipher*" "*chip*" "*__x32*" \
-  "*vma*" "*__ia32*" "*__x64*" "*bpf*" "*calipso*" "eaf*" #"*selinux*"
+  "*vma*" "*__ia32*" "*__x64*" "*bpf*" "*calipso*" "eaf*" "setup_object_debug*" #"*selinux*"
 
 echo "# of functions now being traced: $(wc -l set_ftrace_filter|cut -f1 -d' ')"
 
@@ -227,6 +227,7 @@ echo ${CPUMASK} > tracing_cpumask
 
 touch ${TRIGGER_FILE} # doing this triggers the command and it runs
 
+pwd
 echo "[+] Tracing PID ${PID} on CPU 1 now ..."
 echo markers > trace_options
 echo 1 > tracing_on
@@ -235,9 +236,11 @@ echo 1 > tracing_on
  # caught in the trace...
  # Using a *trace marker* (as below) is very useful! We can search for the string
  # in the trace report and figure where the interesting portion actually is!
-echo "@@@ START tracing ping PID ${PID} on CPU 1 now" > trace_marker
+echo START > trace_marker
+#echo "@@@ START tracing ping PID ${PID} on CPU 1 now" > trace_marker
 wait ${PID}
-echo "@@@ END tracing ping PID ${PID} on CPU 1 now" > trace_marker
+echo END > trace_marker
+#echo "@@@ END tracing ping PID ${PID} on CPU 1 now" > trace_marker
 echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
 # older way:
