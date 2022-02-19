@@ -1,0 +1,608 @@
+ 1)  irq/18--214   =>   ping-2230   
+ 9097.232013 |   1)   ping-2230    |  ...1 |               |  /* sys_sched_setaffinity -> 0x0 */
+ 9097.232017 |   1)   ping-2230    |  ...1 |               |  /* sys_execve(filename: 7ffcc31996b0, argv: 7ffcc3199918, envp: 7ffcc3199938) */
+ 9097.232038 |   1)   ping-2230    |  ...1 |               |  /* sys_execve -> 0xfffffffffffffffe */
+ 9097.232039 |   1)   ping-2230    |  ...1 |               |  /* sys_execve(filename: 7ffcc31996b0, argv: 7ffcc3199918, envp: 7ffcc3199938) */
+ 9097.232049 |   1)   ping-2230    |  ...1 |               |  /* sys_execve -> 0xfffffffffffffffe */
+ 9097.232049 |   1)   ping-2230    |  ...1 |               |  /* sys_execve(filename: 7ffcc31996b0, argv: 7ffcc3199918, envp: 7ffcc3199938) */
+ 9097.232057 |   1)   ping-2230    |  ...1 |               |  /* sys_execve -> 0xfffffffffffffffe */
+ 9097.232058 |   1)   ping-2230    |  ...1 |               |  /* sys_execve(filename: 7ffcc31996b0, argv: 7ffcc3199918, envp: 7ffcc3199938) */
+ 9097.232173 |   1)   ping-2230    |  ...1 |               |  /* sys_execve -> 0x0 */
+ 9097.232186 |   1)   ping-2230    |  ...1 |               |  /* sys_brk(brk: 0) */
+ 9097.232187 |   1)   ping-2230    |  ...1 |               |  /* sys_brk -> 0x5837e1323000 */
+ 9097.232196 |   1)   ping-2230    |  ...1 |               |  /* sys_arch_prctl(option: 3001, arg2: 7ffe0017be70) */
+ 9097.232196 |   1)   ping-2230    |  ...1 |               |  /* sys_arch_prctl -> 0xffffffffffffffea */
+ 9097.232206 |   1)   ping-2230    |  ...1 |               |  /* sys_access(filename: 7ebd4f0ed9e0, mode: 4) */
+ 9097.232210 |   1)   ping-2230    |  ...1 |               |  /* sys_access -> 0xfffffffffffffffe */
+ 9097.232211 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0eab80, flags: 80000, mode: 0) */
+ 9097.232214 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232214 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b070) */
+ 9097.232215 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232215 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 12906, prot: 1, flags: 2, fd: 3, off: 0) */
+ 9097.232217 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0b2000 */
+ 9097.232217 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232217 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232222 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0f4e10, flags: 80000, mode: 0) */
+ 9097.232224 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232225 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 7ffe0017b218, count: 340) */
+ 9097.232226 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232226 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b0c0) */
+ 9097.232227 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232228 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 2000, prot: 3, flags: 22, fd: ffffffff, off: 0) */
+ 9097.232229 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0b0000 */
+ 9097.232232 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 8158, prot: 1, flags: 802, fd: 3, off: 0) */
+ 9097.232233 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0a7000 */
+ 9097.232234 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4f0a9000, len: 5000, prot: 0) */
+ 9097.232236 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232237 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4f0a9000, len: 3000, prot: 5, flags: 812, fd: 3, off: 2000) */
+ 9097.232240 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0a9000 */
+ 9097.232240 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4f0ac000, len: 1000, prot: 1, flags: 812, fd: 3, off: 5000) */
+ 9097.232242 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0ac000 */
+ 9097.232242 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4f0ae000, len: 2000, prot: 3, flags: 812, fd: 3, off: 6000) */
+ 9097.232244 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0ae000 */
+ 9097.232250 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232251 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232253 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0b04e0, flags: 80000, mode: 0) */
+ 9097.232257 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232257 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 7ffe0017b1f8, count: 340) */
+ 9097.232258 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232258 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b0a0) */
+ 9097.232259 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232259 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 11dfc8, prot: 1, flags: 802, fd: 3, off: 0) */
+ 9097.232262 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef89000 */
+ 9097.232262 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef95000, len: ce000, prot: 5, flags: 812, fd: 3, off: c000) */
+ 9097.232267 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef95000 */
+ 9097.232267 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4f063000, len: 3d000, prot: 1, flags: 812, fd: 3, off: da000) */
+ 9097.232270 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f063000 */
+ 9097.232270 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4f0a0000, len: 7000, prot: 3, flags: 812, fd: 3, off: 116000) */
+ 9097.232271 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0a0000 */
+ 9097.232278 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232279 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232282 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0b09f0, flags: 80000, mode: 0) */
+ 9097.232285 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232285 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 7ffe0017b1d8, count: 340) */
+ 9097.232286 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232287 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b080) */
+ 9097.232287 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232288 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 1ba80, prot: 1, flags: 802, fd: 3, off: 0) */
+ 9097.232290 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef6d000 */
+ 9097.232290 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4ef71000, len: 14000, prot: 0) */
+ 9097.232293 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232293 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef71000, len: 10000, prot: 5, flags: 812, fd: 3, off: 4000) */
+ 9097.232295 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef71000 */
+ 9097.232296 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef81000, len: 3000, prot: 1, flags: 812, fd: 3, off: 14000) */
+ 9097.232298 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef81000 */
+ 9097.232298 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef85000, len: 2000, prot: 3, flags: 812, fd: 3, off: 17000) */
+ 9097.232300 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef85000 */
+ 9097.232302 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef87000, len: 1a80, prot: 3, flags: 32, fd: ffffffff, off: 0) */
+ 9097.232304 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef87000 */
+ 9097.232307 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232308 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232311 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0b0f00, flags: 80000, mode: 0) */
+ 9097.232314 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232314 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 7ffe0017b1b8, count: 340) */
+ 9097.232315 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232315 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017add0, count: 310, pos: 40) */
+ 9097.232316 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x310 */
+ 9097.232316 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017ada0, count: 20, pos: 350) */
+ 9097.232316 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x20 */
+ 9097.232316 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017ad50, count: 44, pos: 370) */
+ 9097.232317 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x44 */
+ 9097.232317 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b060) */
+ 9097.232317 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232319 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017acb0, count: 310, pos: 40) */
+ 9097.232319 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x310 */
+ 9097.232320 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017a990, count: 20, pos: 350) */
+ 9097.232320 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x20 */
+ 9097.232320 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64(fd: 3, buf: 7ffe0017a970, count: 44, pos: 370) */
+ 9097.232320 |   1)   ping-2230    |  ...1 |               |  /* sys_pread64 -> 0x44 */
+ 9097.232326 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 1f14d8, prot: 1, flags: 802, fd: 3, off: 0) */
+ 9097.232328 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed7b000 */
+ 9097.232328 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4eda0000, len: 1c3000, prot: 0) */
+ 9097.232331 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232331 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4eda0000, len: 178000, prot: 5, flags: 812, fd: 3, off: 25000) */
+ 9097.232335 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4eda0000 */
+ 9097.232335 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef18000, len: 4a000, prot: 1, flags: 812, fd: 3, off: 19d000) */
+ 9097.232337 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef18000 */
+ 9097.232337 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef63000, len: 6000, prot: 3, flags: 812, fd: 3, off: 1e7000) */
+ 9097.232339 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef63000 */
+ 9097.232342 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ef69000, len: 34d8, prot: 3, flags: 32, fd: ffffffff, off: 0) */
+ 9097.232344 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ef69000 */
+ 9097.232349 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232349 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232355 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0b1420, flags: 80000, mode: 0) */
+ 9097.232358 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232359 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 7ffe0017b198, count: 340) */
+ 9097.232359 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232360 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b040) */
+ 9097.232360 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232361 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 22260, prot: 1, flags: 802, fd: 3, off: 0) */
+ 9097.232363 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed58000 */
+ 9097.232363 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ed5c000, len: 13000, prot: 5, flags: 812, fd: 3, off: 4000) */
+ 9097.232367 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed5c000 */
+ 9097.232367 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ed6f000, len: a000, prot: 1, flags: 812, fd: 3, off: 17000) */
+ 9097.232370 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed6f000 */
+ 9097.232370 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4ed79000, len: 2000, prot: 3, flags: 812, fd: 3, off: 20000) */
+ 9097.232372 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed79000 */
+ 9097.232378 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232379 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232385 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 2000, prot: 3, flags: 22, fd: ffffffff, off: 0) */
+ 9097.232386 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4ed56000 */
+ 9097.232391 |   1)   ping-2230    |  ...1 |               |  /* sys_arch_prctl(option: 1002, arg2: 7ebd4ed57040) */
+ 9097.232391 |   1)   ping-2230    |  ...1 |               |  /* sys_arch_prctl -> 0x0 */
+ 9097.232421 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4ef63000, len: 3000, prot: 1) */
+ 9097.232425 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232445 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4ed79000, len: 1000, prot: 1) */
+ 9097.232450 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232453 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4ef85000, len: 1000, prot: 1) */
+ 9097.232456 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232483 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4f0a0000, len: 2000, prot: 1) */
+ 9097.232486 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232491 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4f0ae000, len: 1000, prot: 1) */
+ 9097.232494 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232549 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 5837e0cc1000, len: 1000, prot: 1) */
+ 9097.232552 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232554 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4f0f2000, len: 1000, prot: 1) */
+ 9097.232557 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232558 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap(addr: 7ebd4f0b2000, len: 12906) */
+ 9097.232569 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap -> 0x0 */
+ 9097.232623 |   1)   ping-2230    |  ...1 |               |  /* sys_brk(brk: 0) */
+ 9097.232623 |   1)   ping-2230    |  ...1 |               |  /* sys_brk -> 0x5837e1323000 */
+ 9097.232623 |   1)   ping-2230    |  ...1 |               |  /* sys_brk(brk: 5837e1344000) */
+ 9097.232625 |   1)   ping-2230    |  ...1 |               |  /* sys_brk -> 0x5837e1344000 */
+ 9097.232636 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 20, arg3: 0, arg4: 7ffe0017bf68, arg5: 0) */
+ 9097.232637 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0x1 */
+ 9097.232637 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 30, arg3: 0, arg4: 7ebd4ee9de9e, arg5: 0) */
+ 9097.232637 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0xffffffffffffffea */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 28, arg3: 0, arg4: ffffffffffffff80, arg5: 0) */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0x1 */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 2c, arg3: 0, arg4: 7ebd4ee9de9e, arg5: 0) */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0xffffffffffffffea */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 2a, arg3: 0, arg4: ffffffffffffff80, arg5: 0) */
+ 9097.232638 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0xffffffffffffffea */
+ 9097.232639 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 17, arg2: 29, arg3: 0, arg4: ffffffffffffff80, arg5: 0) */
+ 9097.232639 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0xffffffffffffffea */
+ 9097.232643 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e13232d4, dataptr: 0) */
+ 9097.232643 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232644 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e13232d4, dataptr: 5837e13232dc) */
+ 9097.232644 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232645 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e1323304, dataptr: 0) */
+ 9097.232645 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232645 |   1)   ping-2230    |  ...1 |               |  /* sys_capset(header: 5837e1323304, data: 5837e132330c) */
+ 9097.232647 |   1)   ping-2230    |  ...1 |               |  /* sys_capset -> 0x0 */
+ 9097.232647 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 8, arg2: 1, arg3: 5837e132330c, arg4: 7ebd4ee9db3b, arg5: 1) */
+ 9097.232648 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0x0 */
+ 9097.232650 |   1)   ping-2230    |  ...1 |               |  /* sys_getuid() */
+ 9097.232650 |   1)   ping-2230    |  ...1 |               |  /* sys_getuid -> 0x0 */
+ 9097.232650 |   1)   ping-2230    |  ...1 |               |  /* sys_setuid(uid: 0) */
+ 9097.232651 |   1)   ping-2230    |  ...1 |               |  /* sys_setuid -> 0x0 */
+ 9097.232652 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl(option: 8, arg2: 0, arg3: 5837e132330c, arg4: 0, arg5: 1) */
+ 9097.232652 |   1)   ping-2230    |  ...1 |               |  /* sys_prctl -> 0x0 */
+ 9097.232653 |   1)   ping-2230    |  ...1 |               |  /* sys_getuid() */
+ 9097.232653 |   1)   ping-2230    |  ...1 |               |  /* sys_getuid -> 0x0 */
+ 9097.232654 |   1)   ping-2230    |  ...1 |               |  /* sys_geteuid() */
+ 9097.232655 |   1)   ping-2230    |  ...1 |               |  /* sys_geteuid -> 0x0 */
+ 9097.232659 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4ef39fd0, flags: 80000, mode: 0) */
+ 9097.232662 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232664 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ebd4ef686c0) */
+ 9097.232665 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232665 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: ddd370, prot: 1, flags: 2, fd: 3, off: 0) */
+ 9097.232667 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df78000 */
+ 9097.232669 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232669 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232688 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ffe0017b940, flags: 80000, mode: 0) */
+ 9097.232691 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x3 */
+ 9097.232693 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 3, statbuf: 7ffe0017b770) */
+ 9097.232694 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232695 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 5837e13246c0, count: 1000) */
+ 9097.232696 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0xbb4 */
+ 9097.232703 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 3, buf: 5837e13246c0, count: 1000) */
+ 9097.232704 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.232704 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 3) */
+ 9097.232704 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232711 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e13244a0, flags: 0, mode: 0) */
+ 9097.232713 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0xfffffffffffffffe */
+ 9097.232713 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1324710, flags: 0, mode: 0) */
+ 9097.232715 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0xfffffffffffffffe */
+ 9097.232715 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1324810, flags: 0, mode: 0) */
+ 9097.232717 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0xfffffffffffffffe */
+ 9097.232717 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1324790, flags: 0, mode: 0) */
+ 9097.232718 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0xfffffffffffffffe */
+ 9097.232720 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e13248e4, dataptr: 0) */
+ 9097.232720 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232720 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e13248e4, dataptr: 5837e13248ec) */
+ 9097.232721 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232721 |   1)   ping-2230    |  ...1 |               |  /* sys_capset(header: 5837e13248e4, data: 5837e13248ec) */
+ 9097.232722 |   1)   ping-2230    |  ...1 |               |  /* sys_capset -> 0x0 */
+ 9097.232723 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 2, type: 2, protocol: 1) */
+ 9097.232730 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x3 */
+ 9097.232730 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: a, type: 2, protocol: 3a) */
+ 9097.232733 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x4 */
+ 9097.232734 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e1324914, dataptr: 0) */
+ 9097.232734 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232734 |   1)   ping-2230    |  ...1 |               |  /* sys_capget(header: 5837e1324914, dataptr: 5837e132491c) */
+ 9097.232734 |   1)   ping-2230    |  ...1 |               |  /* sys_capget -> 0x0 */
+ 9097.232734 |   1)   ping-2230    |  ...1 |               |  /* sys_capset(header: 5837e1324914, data: 5837e132491c) */
+ 9097.232735 |   1)   ping-2230    |  ...1 |               |  /* sys_capset -> 0x0 */
+ 9097.232739 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 1, type: 80801, protocol: 0) */
+ 9097.232742 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.232743 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b200, addrlen: 6e) */
+ 9097.232750 |   1)   ping-2230    |  .... |               |  /* kfree_skb: skbaddr=00000000563aecef protocol=0 location=00000000d37fbd82 */
+ 9097.232752 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0xfffffffffffffffe */
+ 9097.232753 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232753 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232757 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 1, type: 80801, protocol: 0) */
+ 9097.232758 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.232759 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b3f0, addrlen: 6e) */
+ 9097.232761 |   1)   ping-2230    |  .... |               |  /* kfree_skb: skbaddr=00000000563aecef protocol=0 location=00000000d37fbd82 */
+ 9097.232762 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0xfffffffffffffffe */
+ 9097.232762 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232762 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232766 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4ef35714, flags: 80000, mode: 0) */
+ 9097.232768 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232771 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017b350) */
+ 9097.232771 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232773 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232774 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x21e */
+ 9097.232777 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232777 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.232778 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232778 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232779 |   1)   ping-2230    |  ...1 |               |  /* sys_newstat(filename: 7ebd4ef35530, statbuf: 7ffe0017b450) */
+ 9097.232783 |   1)   ping-2230    |  ...1 |               |  /* sys_newstat -> 0x0 */
+ 9097.232784 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4ef3557f, flags: 80000, mode: 0) */
+ 9097.232786 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232786 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ae70) */
+ 9097.232787 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232787 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232788 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x5c */
+ 9097.232789 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232789 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.232790 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232790 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232791 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4ef35530, flags: 80000, mode: 0) */
+ 9097.232792 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232793 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017b040) */
+ 9097.232793 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232793 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232795 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x2cd */
+ 9097.232797 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326530, count: 1000) */
+ 9097.232797 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.232798 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232798 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232799 |   1)   ping-2230    |  ...1 |               |  /* sys_newuname(name: 7ffe0017b010) */
+ 9097.232799 |   1)   ping-2230    |  ...1 |               |  /* sys_newuname -> 0x0 */
+ 9097.232802 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0eab80, flags: 80000, mode: 0) */
+ 9097.232803 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232803 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab20) */
+ 9097.232804 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232804 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 12906, prot: 1, flags: 2, fd: 5, off: 0) */
+ 9097.232805 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0b2000 */
+ 9097.232806 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232806 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232810 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1325110, flags: 80000, mode: 0) */
+ 9097.232812 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232812 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 7ffe0017acc8, count: 340) */
+ 9097.232813 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232813 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab70) */
+ 9097.232813 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232814 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 13738, prot: 1, flags: 802, fd: 5, off: 0) */
+ 9097.232816 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df64000 */
+ 9097.232817 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df67000, len: 7000, prot: 5, flags: 812, fd: 5, off: 3000) */
+ 9097.232830 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df67000 */
+ 9097.232830 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df6e000, len: 2000, prot: 1, flags: 812, fd: 5, off: a000) */
+ 9097.232833 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df6e000 */
+ 9097.232833 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df70000, len: 2000, prot: 3, flags: 812, fd: 5, off: b000) */
+ 9097.232836 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df70000 */
+ 9097.232839 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df72000, len: 5738, prot: 3, flags: 32, fd: ffffffff, off: 0) */
+ 9097.232840 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df72000 */
+ 9097.232875 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232875 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232886 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4df70000, len: 1000, prot: 1) */
+ 9097.232890 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.232893 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap(addr: 7ebd4f0b2000, len: 12906) */
+ 9097.232901 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap -> 0x0 */
+ 9097.232905 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4df6e077, flags: 80000, mode: 0) */
+ 9097.232922 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232924 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek(fd: 5, offset: 0, whence: 1) */
+ 9097.232924 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek -> 0x0 */
+ 9097.232924 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017b2a0) */
+ 9097.232925 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232925 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326600, count: 1000) */
+ 9097.232926 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0xde */
+ 9097.232928 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek(fd: 5, offset: 0, whence: 1) */
+ 9097.232928 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek -> 0xde */
+ 9097.232929 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1326600, count: 1000) */
+ 9097.232929 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.232929 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232930 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232953 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0eab80, flags: 80000, mode: 0) */
+ 9097.232955 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232955 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab20) */
+ 9097.232955 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.232955 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 12906, prot: 1, flags: 2, fd: 5, off: 0) */
+ 9097.232957 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0b2000 */
+ 9097.232957 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.232957 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.232994 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1326600, flags: 80000, mode: 0) */
+ 9097.232997 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.232997 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 7ffe0017acc8, count: 340) */
+ 9097.232998 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.232999 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab70) */
+ 9097.232999 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.233000 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 5010, prot: 1, flags: 802, fd: 5, off: 0) */
+ 9097.233002 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df5e000 */
+ 9097.233002 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df5f000, len: 2000, prot: 5, flags: 812, fd: 5, off: 1000) */
+ 9097.233027 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df5f000 */
+ 9097.233028 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df61000, len: 1000, prot: 1, flags: 812, fd: 5, off: 3000) */
+ 9097.233030 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df61000 */
+ 9097.233030 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df62000, len: 2000, prot: 3, flags: 812, fd: 5, off: 3000) */
+ 9097.233032 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df62000 */
+ 9097.233042 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.233042 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.233051 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4df62000, len: 1000, prot: 1) */
+ 9097.233054 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.233056 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap(addr: 7ebd4f0b2000, len: 12906) */
+ 9097.233079 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap -> 0x0 */
+ 9097.233084 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4f0eab80, flags: 80000, mode: 0) */
+ 9097.233086 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.233087 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab30) */
+ 9097.233087 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.233087 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 12906, prot: 1, flags: 2, fd: 5, off: 0) */
+ 9097.233089 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4f0b2000 */
+ 9097.233089 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.233089 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.233092 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 5837e1326cd0, flags: 80000, mode: 0) */
+ 9097.233094 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.233094 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 7ffe0017acd8, count: 340) */
+ 9097.233095 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x340 */
+ 9097.233095 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017ab80) */
+ 9097.233096 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.233096 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 0, len: 80d8, prot: 1, flags: 802, fd: 5, off: 0) */
+ 9097.233098 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df55000 */
+ 9097.233098 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df57000, len: 4000, prot: 5, flags: 812, fd: 5, off: 2000) */
+ 9097.233100 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df57000 */
+ 9097.233101 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df5b000, len: 1000, prot: 1, flags: 812, fd: 5, off: 6000) */
+ 9097.233102 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df5b000 */
+ 9097.233103 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap(addr: 7ebd4df5c000, len: 2000, prot: 3, flags: 812, fd: 5, off: 6000) */
+ 9097.233104 |   1)   ping-2230    |  ...1 |               |  /* sys_mmap -> 0x7ebd4df5c000 */
+ 9097.233111 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.233111 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.233118 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect(start: 7ebd4df5c000, len: 1000, prot: 1) */
+ 9097.233121 |   1)   ping-2230    |  ...1 |               |  /* sys_mprotect -> 0x0 */
+ 9097.233123 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap(addr: 7ebd4f0b2000, len: 12906) */
+ 9097.233131 |   1)   ping-2230    |  ...1 |               |  /* sys_munmap -> 0x0 */
+ 9097.233142 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 2, type: 80802, protocol: 0) */
+ 9097.233146 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.233147 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 5, level: 0, optname: b, optval: 7ffe00179dd4, optlen: 4) */
+ 9097.233149 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.233149 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ebd4ef6b4d4, addrlen: 10) */
+ 9097.233155 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.233156 |   1)   ping-2230    |  ...1 |               |  /* sys_poll(ufds: 7ffe00179f78, nfds: 1, timeout_msecs: 0) */
+ 9097.233157 |   1)   ping-2230    |  ...1 |               |  /* sys_poll -> 0x1 */
+ 9097.233158 |   1)   ping-2230    |  ...1 |               |  /* sys_sendmmsg(fd: 5, mmsg: 7ffe00179fa0, vlen: 2, flags: 4000) */
+ 9097.233163 |   1)   ping-2230    |  .... |               |  /* net_dev_queue: dev=lo skbaddr=00000000563aecef len=83 */
+ 9097.233164 |   1)   ping-2230    |  .... |               |  /* net_dev_start_xmit: dev=lo queue_mapping=0 skbaddr=00000000563aecef vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 len=83 data_len=0 network_offset=14 transport_offset_valid=1 transport_offset=34 tx_flags=0 gso_size=0 gso_segs=0 gso_type=0x0 */
+ 9097.233165 |   1)   ping-2230    |  .... |               |  /* netif_rx_entry: dev=lo napi_id=0x2 queue_mapping=0 skbaddr=00000000563aecef vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 hash=0x3975db68 l4_hash=1 len=69 data_len=0 truesize=768 mac_header_valid=1 mac_header=-14 nr_frags=0 gso_size=0 gso_type=0x0 */
+ 9097.233166 |   1)   ping-2230    |  .... |               |  /* netif_rx: dev=lo skbaddr=00000000563aecef len=69 */
+ 9097.233166 |   1)   ping-2230    |  .... |               |  /* netif_rx_exit: ret=0 */
+ 9097.233166 |   1)   ping-2230    |  .... |               |  /* net_dev_xmit: dev=lo skbaddr=00000000563aecef len=83 rc=0 */
+ 9097.233167 |   1)   ping-2230    |  ..s1 |               |  /* netif_receive_skb: dev=lo skbaddr=00000000563aecef len=69 */
+ 9097.233176 |   1)   ping-2230    |  .Ns1 |               |  /* napi_poll: napi poll on napi struct 0000000090fcfff2 for device (no_device) work 1 budget 64 */
+ 1)   ping-2230    =>  systemd-686  
+ 1)  systemd-686   =>   ping-2230   
+ 9097.233579 |   1)   ping-2230    |  .... |               |  /* net_dev_queue: dev=lo skbaddr=00000000e06153da len=83 */
+ 9097.233579 |   1)   ping-2230    |  .... |               |  /* net_dev_start_xmit: dev=lo queue_mapping=0 skbaddr=00000000e06153da vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 len=83 data_len=0 network_offset=14 transport_offset_valid=1 transport_offset=34 tx_flags=0 gso_size=0 gso_segs=0 gso_type=0x0 */
+ 9097.233580 |   1)   ping-2230    |  .... |               |  /* netif_rx_entry: dev=lo napi_id=0x2 queue_mapping=0 skbaddr=00000000e06153da vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 hash=0x3975db68 l4_hash=1 len=69 data_len=0 truesize=768 mac_header_valid=1 mac_header=-14 nr_frags=0 gso_size=0 gso_type=0x0 */
+ 9097.233580 |   1)   ping-2230    |  .... |               |  /* netif_rx: dev=lo skbaddr=00000000e06153da len=69 */
+ 9097.233581 |   1)   ping-2230    |  .... |               |  /* netif_rx_exit: ret=0 */
+ 9097.233581 |   1)   ping-2230    |  .... |               |  /* net_dev_xmit: dev=lo skbaddr=00000000e06153da len=83 rc=0 */
+ 9097.233582 |   1)   ping-2230    |  ..s1 |               |  /* netif_receive_skb: dev=lo skbaddr=00000000e06153da len=69 */
+ 9097.233587 |   1)   ping-2230    |  .Ns1 |               |  /* napi_poll: napi poll on napi struct 0000000090fcfff2 for device (no_device) work 1 budget 64 */
+ 1)   ping-2230    =>  systemd-686  
+ 1)  systemd-686   =>   ping-2230   
+ 9097.233794 |   1)   ping-2230    |  ...1 |               |  /* sys_sendmmsg -> 0x2 */
+ 9097.233795 |   1)   ping-2230    |  ...1 |               |  /* sys_poll(ufds: 7ffe00179f78, nfds: 1, timeout_msecs: 1388) */
+ 9097.274106 |   1)   ping-2230    |  ...1 |               |  /* sys_poll -> 0x1 */
+ 9097.274113 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl(fd: 5, cmd: 541b, arg: 7ffe00179f3c) */
+ 9097.274114 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl -> 0x0 */
+ 9097.274115 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom(fd: 5, ubuf: 7ffe0017acb0, size: 800, flags: 0, addr: 7ffe00179f80, addr_len: 7ffe00179f60) */
+ 9097.274117 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000a9ee25c2 */
+ 9097.274118 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom -> 0x59 */
+ 9097.274131 |   1)   ping-2230    |  ...1 |               |  /* sys_poll(ufds: 7ffe00179f78, nfds: 1, timeout_msecs: 135f) */
+ 9097.334941 |   1)   ping-2230    |  ...1 |               |  /* sys_poll -> 0x1 */
+ 9097.334966 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl(fd: 5, cmd: 541b, arg: 7ffe0017b4f4) */
+ 9097.334967 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl -> 0x0 */
+ 9097.334982 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom(fd: 5, ubuf: 5837e1327370, size: 10000, flags: 0, addr: 7ffe00179f80, addr_len: 7ffe00179f60) */
+ 9097.334984 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000a9ee25c2 */
+ 9097.334986 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom -> 0x7d */
+ 9097.334993 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.334994 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335008 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4ef33d13, flags: 80000, mode: 0) */
+ 9097.335021 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.335022 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017b710) */
+ 9097.335024 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.335026 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe0017b500) */
+ 9097.335041 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.335044 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e13275a0, count: 1000) */
+ 9097.335047 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0xa18 */
+ 9097.335071 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e13275a0, count: 1000) */
+ 9097.335072 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.335072 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.335073 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335075 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 10, type: 80003, protocol: 0) */
+ 9097.335083 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.335083 |   1)   ping-2230    |  ...1 |               |  /* sys_bind(fd: 5, umyaddr: 7ffe0017b5c8, addrlen: c) */
+ 9097.335085 |   1)   ping-2230    |  ...1 |               |  /* sys_bind -> 0x0 */
+ 9097.335086 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b5c8, usockaddr_len: 7ffe0017b5c4) */
+ 9097.335087 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335088 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto(fd: 5, buff: 7ffe0017b630, len: 14, flags: 0, addr: 7ffe0017b5d4, addr_len: c) */
+ 9097.335100 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto -> 0x14 */
+ 9097.335100 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg(fd: 5, msg: 7ffe0017b5f0, flags: 0) */
+ 9097.335102 |   1)   ping-2230    |  .... |               |  /* skb_copy_datagram_iovec: skbaddr=00000000715d39f5 len=252 */
+ 9097.335102 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000715d39f5 */
+ 9097.335109 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg -> 0xfc */
+ 9097.335110 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg(fd: 5, msg: 7ffe0017b5f0, flags: 0) */
+ 9097.335111 |   1)   ping-2230    |  .... |               |  /* skb_copy_datagram_iovec: skbaddr=00000000715d39f5 len=216 */
+ 9097.335111 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000715d39f5 */
+ 9097.335113 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000a9ee25c2 */
+ 9097.335113 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg -> 0xd8 */
+ 9097.335114 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg(fd: 5, msg: 7ffe0017b5f0, flags: 0) */
+ 9097.335114 |   1)   ping-2230    |  .... |               |  /* skb_copy_datagram_iovec: skbaddr=00000000715d39f5 len=20 */
+ 9097.335114 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=00000000715d39f5 */
+ 9097.335115 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg -> 0x14 */
+ 9097.335116 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.335116 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335121 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 2, type: 80002, protocol: 0) */
+ 9097.335124 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.335125 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e13273c0, addrlen: 10) */
+ 9097.335130 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335130 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b698, usockaddr_len: 7ffe0017b890) */
+ 9097.335131 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335132 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b8d0, addrlen: 10) */
+ 9097.335132 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335133 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e1327410, addrlen: 10) */
+ 9097.335135 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335135 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b6c8, usockaddr_len: 7ffe0017b890) */
+ 9097.335135 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335136 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b8d0, addrlen: 10) */
+ 9097.335136 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335137 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e1327460, addrlen: 10) */
+ 9097.335138 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335139 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b6f8, usockaddr_len: 7ffe0017b890) */
+ 9097.335139 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335139 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.335140 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335142 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: a, type: 80002, protocol: 0) */
+ 9097.335146 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.335146 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e13274b0, addrlen: 1c) */
+ 9097.335156 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335157 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b728, usockaddr_len: 7ffe0017b890) */
+ 9097.335157 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335158 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b8d0, addrlen: 10) */
+ 9097.335159 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335159 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e1327510, addrlen: 1c) */
+ 9097.335161 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335161 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b758, usockaddr_len: 7ffe0017b890) */
+ 9097.335162 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335162 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b8d0, addrlen: 10) */
+ 9097.335163 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335163 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 5837e1327570, addrlen: 1c) */
+ 9097.335165 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335166 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 7ffe0017b788, usockaddr_len: 7ffe0017b890) */
+ 9097.335166 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335167 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.335167 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335180 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 2, type: 2, protocol: 0) */
+ 9097.335184 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.335184 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ffe0017b900, addrlen: 10) */
+ 9097.335187 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.335187 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname(fd: 5, usockaddr: 5837e0cc2070, usockaddr_len: 7ffe0017b8e4) */
+ 9097.335188 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockname -> 0x0 */
+ 9097.335188 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.335189 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.335192 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 0, optname: b, optval: 7ffe0017b8e4, optlen: 4) */
+ 9097.335194 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335195 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 0, optname: c, optval: 7ffe0017b8e4, optlen: 4) */
+ 9097.335195 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335196 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 0, optname: 7, optval: 7ffe0017b8e4, optlen: 4) */
+ 9097.335196 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335200 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 1, optname: 7, optval: 5837e0cc66a8, optlen: 4) */
+ 9097.335201 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335201 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 1, optname: 8, optval: 7ffe0017b890, optlen: 4) */
+ 9097.335202 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335202 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockopt(fd: 3, level: 1, optname: 8, optval: 7ffe0017b890, optlen: 7ffe0017b894) */
+ 9097.335203 |   1)   ping-2230    |  ...1 |               |  /* sys_getsockopt -> 0x0 */
+ 9097.335215 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 1, statbuf: 7ffe0017b110) */
+ 9097.335217 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.335219 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 37) */
+ 9097.335247 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x37 */
+ 9097.335248 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 1, optname: 1d, optval: 7ffe0017b7d0, optlen: 4) */
+ 9097.335377 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335378 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 1, optname: 15, optval: 7ffe0017b7c0, optlen: 10) */
+ 9097.335379 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335380 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 3, level: 1, optname: 14, optval: 7ffe0017b7c0, optlen: 10) */
+ 9097.335380 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.335382 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction(sig: 2, act: 7ffe0017b660, oact: 0, sigsetsize: 8) */
+ 9097.335382 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction -> 0x0 */
+ 9097.335383 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction(sig: e, act: 7ffe0017b660, oact: 0, sigsetsize: 8) */
+ 9097.335383 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction -> 0x0 */
+ 9097.335383 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction(sig: 3, act: 7ffe0017b660, oact: 0, sigsetsize: 8) */
+ 9097.335384 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigaction -> 0x0 */
+ 9097.335384 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigprocmask(how: 2, nset: 7ffe0017b7f0, oset: 0, sigsetsize: 8) */
+ 9097.335386 |   1)   ping-2230    |  ...1 |               |  /* sys_rt_sigprocmask -> 0x0 */
+ 9097.335386 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl(fd: 1, cmd: 5401, arg: 7ffe0017b710) */
+ 9097.335388 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl -> 0x0 */
+ 9097.335389 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl(fd: 1, cmd: 5413, arg: 7ffe0017b7d0) */
+ 9097.335389 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl -> 0x0 */
+ 9097.335390 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto(fd: 3, buff: 5837e0cc66c0, len: 40, flags: 0, addr: 5837e0cc3500, addr_len: 10) */
+ 9097.335397 |   1)   ping-2230    |  .... |               |  /* net_dev_queue: dev=enp0s8 skbaddr=00000000715d39f5 len=98 */
+ 9097.335398 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto -> 0x40 */
+ 9097.335399 |   1)   ping-2230    |  ...1 |               |  /* sys_setitimer(which: 0, value: 7ffe0017a710, ovalue: 0) */
+ 9097.335401 |   1)   ping-2230    |  ...1 |               |  /* sys_setitimer -> 0x0 */
+ 9097.335401 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg(fd: 3, msg: 7ffe0017a7b0, flags: 0) */
+ 9097.350006 |   1)   ping-2230    |  .... |               |  /* skb_copy_datagram_iovec: skbaddr=000000004a88db59 len=64 */
+ 9097.350009 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=000000004a88db59 */
+ 9097.350012 |   1)   ping-2230    |  ...1 |               |  /* sys_recvmsg -> 0x40 */
+ 9097.350021 |   1)   ping-2230    |  ...1 |               |  /* sys_newstat(filename: 7ebd4ef35530, statbuf: 7ffe00179670) */
+ 9097.350031 |   1)   ping-2230    |  ...1 |               |  /* sys_newstat -> 0x0 */
+ 9097.350037 |   1)   ping-2230    |  ...1 |               |  /* sys_openat(dfd: ffffff9c, filename: 7ebd4df6e077, flags: 80000, mode: 0) */
+ 9097.350058 |   1)   ping-2230    |  ...1 |               |  /* sys_openat -> 0x5 */
+ 9097.350059 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek(fd: 5, offset: 0, whence: 1) */
+ 9097.350060 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek -> 0x0 */
+ 9097.350061 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat(fd: 5, statbuf: 7ffe001794e0) */
+ 9097.350062 |   1)   ping-2230    |  ...1 |               |  /* sys_newfstat -> 0x0 */
+ 9097.350068 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1328120, count: 1000) */
+ 9097.350071 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0xde */
+ 9097.350073 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek(fd: 5, offset: 0, whence: 1) */
+ 9097.350073 |   1)   ping-2230    |  ...1 |               |  /* sys_lseek -> 0xde */
+ 9097.350074 |   1)   ping-2230    |  ...1 |               |  /* sys_read(fd: 5, buf: 5837e1328120, count: 1000) */
+ 9097.350074 |   1)   ping-2230    |  ...1 |               |  /* sys_read -> 0x0 */
+ 9097.350075 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.350076 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.350087 |   1)   ping-2230    |  ...1 |               |  /* sys_socket(family: 2, type: 80802, protocol: 0) */
+ 9097.350094 |   1)   ping-2230    |  ...1 |               |  /* sys_socket -> 0x5 */
+ 9097.350095 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt(fd: 5, level: 0, optname: b, optval: 7ffe001789a4, optlen: 4) */
+ 9097.350097 |   1)   ping-2230    |  ...1 |               |  /* sys_setsockopt -> 0x0 */
+ 9097.350097 |   1)   ping-2230    |  ...1 |               |  /* sys_connect(fd: 5, uservaddr: 7ebd4ef6b4d4, addrlen: 10) */
+ 9097.350103 |   1)   ping-2230    |  ...1 |               |  /* sys_connect -> 0x0 */
+ 9097.350103 |   1)   ping-2230    |  ...1 |               |  /* sys_poll(ufds: 7ffe00178b48, nfds: 1, timeout_msecs: 0) */
+ 9097.350104 |   1)   ping-2230    |  ...1 |               |  /* sys_poll -> 0x1 */
+ 9097.350107 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto(fd: 5, buff: 7ffe00178c70, len: 36, flags: 4000, addr: 0, addr_len: 0) */
+ 9097.350113 |   1)   ping-2230    |  .... |               |  /* net_dev_queue: dev=lo skbaddr=00000000a9ee25c2 len=96 */
+ 9097.350113 |   1)   ping-2230    |  .... |               |  /* net_dev_start_xmit: dev=lo queue_mapping=0 skbaddr=00000000a9ee25c2 vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 len=96 data_len=0 network_offset=14 transport_offset_valid=1 transport_offset=34 tx_flags=0 gso_size=0 gso_segs=0 gso_type=0x0 */
+ 9097.350114 |   1)   ping-2230    |  .... |               |  /* netif_rx_entry: dev=lo napi_id=0x2 queue_mapping=0 skbaddr=00000000a9ee25c2 vlan_tagged=0 vlan_proto=0x0000 vlan_tci=0x0000 protocol=0x0800 ip_summed=3 hash=0x728299e9 l4_hash=1 len=82 data_len=0 truesize=768 mac_header_valid=1 mac_header=-14 nr_frags=0 gso_size=0 gso_type=0x0 */
+ 9097.350115 |   1)   ping-2230    |  .... |               |  /* netif_rx: dev=lo skbaddr=00000000a9ee25c2 len=82 */
+ 9097.350115 |   1)   ping-2230    |  .... |               |  /* netif_rx_exit: ret=0 */
+ 9097.350115 |   1)   ping-2230    |  .... |               |  /* net_dev_xmit: dev=lo skbaddr=00000000a9ee25c2 len=96 rc=0 */
+ 9097.350116 |   1)   ping-2230    |  ..s1 |               |  /* netif_receive_skb: dev=lo skbaddr=00000000a9ee25c2 len=82 */
+ 9097.350123 |   1)   ping-2230    |  .Ns1 |               |  /* napi_poll: napi poll on napi struct 0000000090fcfff2 for device (no_device) work 1 budget 64 */
+ 1)   ping-2230    =>  systemd-686  
+ 1)  systemd-686   =>   ping-2230   
+ 9097.350345 |   1)   ping-2230    |  ...1 |               |  /* sys_sendto -> 0x36 */
+ 9097.350347 |   1)   ping-2230    |  ...1 |               |  /* sys_poll(ufds: 7ffe00178b48, nfds: 1, timeout_msecs: 1388) */
+ 1)   ping-2230    =>  systemd-686  
+ 1)  systemd-686   =>   ping-2230   
+ 9097.442192 |   1)   ping-2230    |  ...1 |               |  /* sys_poll -> 0x1 */
+ 9097.442195 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl(fd: 5, cmd: 541b, arg: 7ffe00178b0c) */
+ 9097.442197 |   1)   ping-2230    |  ...1 |               |  /* sys_ioctl -> 0x0 */
+ 9097.442197 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom(fd: 5, ubuf: 7ffe00178e70, size: 400, flags: 0, addr: 7ffe00178b50, addr_len: 7ffe00178b30) */
+ 9097.442199 |   1)   ping-2230    |  .... |               |  /* consume_skb: skbaddr=000000005c70cd93 */
+ 9097.442200 |   1)   ping-2230    |  ...1 |               |  /* sys_recvfrom -> 0x36 */
+ 9097.442213 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 5) */
+ 9097.442214 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.442232 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 4a) */
+ 9097.442247 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x4a */
+ 9097.442248 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 1) */
+ 9097.442249 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x1 */
+ 9097.442250 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 25) */
+ 9097.442251 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x25 */
+ 9097.442254 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 3c) */
+ 9097.442275 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x3c */
+ 9097.442276 |   1)   ping-2230    |  ...1 |               |  /* sys_write(fd: 1, buf: 5837e1327cd0, count: 35) */
+ 9097.442277 |   1)   ping-2230    |  ...1 |               |  /* sys_write -> 0x35 */
+ 9097.442279 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 1) */
+ 9097.442279 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.442279 |   1)   ping-2230    |  ...1 |               |  /* sys_close(fd: 2) */
+ 9097.442280 |   1)   ping-2230    |  ...1 |               |  /* sys_close -> 0x0 */
+ 9097.442331 |   1)   ping-2230    |  ...1 |               |  /* sys_exit_group(error_code: 0) */
