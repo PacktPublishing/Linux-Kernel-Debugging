@@ -87,7 +87,7 @@ echo 1 > options/funcgraph-duration
 echo 1 > options/funcgraph-irqs
 echo 1 > options/funcgraph-overhead
 echo 0 > options/funcgraph-overrun
-echo 1 > options/funcgraph-proc
+echo 0 > options/funcgraph-proc
 echo 0 > options/funcgraph-tail
 
 echo 0 > max_graph_depth

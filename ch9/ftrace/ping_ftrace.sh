@@ -109,7 +109,7 @@ echo "[+] setting options"
 # display the process context
 echo 1 > options/funcgraph-proc
 # display the name of the terminating function
-#echo 1 > options/funcgraph-tail
+echo 1 > options/funcgraph-tail
 # display the 4 column latency trace info (f.e. dNs1)
 echo 1 > options/latency-format
 # display the timestamp
@@ -178,7 +178,7 @@ else # filter via the set_event interface
  echo 'syscalls:*' >> set_event
 fi
 
-#--- Get rid of unrequired funcs! This is very fast
+#--- Get rid of unrequired funcs!
 # NOTE: depending on your particular kernel ver and config, this list of funcs
 # to remove can vary.
 echo "[+] filter: remove unwanted functions"
@@ -241,13 +241,13 @@ echo 1 > tracing_on
  # in the trace report and figure where the interesting portion actually is!
  #---
  # RELOOK:
- # Pecuiliar: writing to the trace_marker pseudofile fails with
+ # Peculiar: writing to the trace_marker pseudofile fails with
  #  bash: echo: write error: Bad file descriptor
- # on my VMs, but work fine on my native Linux system...
+ # ??
  #---
-echo START > trace_marker
+echo 'START' > trace_marker
 wait ${PID}
-echo END > trace_marker
+echo 'END' > trace_marker
 echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
 
