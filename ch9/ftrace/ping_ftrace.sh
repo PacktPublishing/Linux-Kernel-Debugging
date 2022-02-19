@@ -166,16 +166,14 @@ if [ ${FILTER_VIA_AVAIL_FUNCS} -eq 1 ] ; then
 
 else # filter via the set_event interface
 
- # This is fast but doesn't yield as good detail!
+ # This is FAST but doesn't yield as much detail!
+ # We also seem to lose the function graph indentation (but do gain seeing
+ # function parameters along with their current value!)
  echo " Alternate event-based filtering (via set_event):"
- echo 'net:*' >> set_event
- echo 'sock:*' >> set_event
- echo 'skb:*' >> set_event
- echo 'tcp:*' >> set_event
- echo 'udp:*' >> set_event
- echo 'napi:*' >> set_event
- echo 'qdisc:*' >> set_event
- echo 'syscalls:*' >> set_event
+ echo 'net:* sock:* skb:* tcp:* udp:* napi:* qdisc:* neigh:* syscalls:*' >> set_event
+ # Getting rid of syscalls:* helps make the output very small and readable; but,
+ # again, at a cost- you can't see the context in which network code is running..
+ #echo 'net:* sock:* skb:* tcp:* udp:* napi:* qdisc:* neigh:*' >> set_event
 fi
 
 #--- Get rid of unrequired funcs!
