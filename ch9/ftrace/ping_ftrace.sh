@@ -166,7 +166,7 @@ if [ ${FILTER_VIA_AVAIL_FUNCS} -eq 1 ] ; then
 
 else # filter via the set_event interface
 
- # This is FAST but doesn't yield as good detail!
+ # This is fast but doesn't yield as good detail!
  echo " Alternate event-based filtering (via set_event):"
  echo 'net:*' >> set_event
  echo 'sock:*' >> set_event
@@ -186,7 +186,10 @@ filterfunc_remove "*idle*" "tick_nohz_idle_stop_tick" "rcu_*" "*__rcu_*" \
   "*down_write*" "*up_write*" "*down_read*" "*up_read*" \
   "*get_task_policy*" "*kthread_blkcg*" "*kthread_blkcg*" \
   "*IPI*" "*ipi*" "*ipc*" "*xen*" "*pipe*" "*cipher*" "*chip*" "*__x32*" \
-  "*vma*" "*__ia32*" "*__x64*" "*bpf*" "*calipso*" "eaf*" "setup_object_debug*" #"*selinux*"
+  "*vma*" "*__ia32*" "*__x64*" "*bpf*" "*calipso*" "eaf*" "setup_object_debug*" \
+  "*alloc*" "*fail_alloc*" "*get_page*" "*prep_new*" "*numa*" "*kmem_*" "vm_*" \
+  "*copy_page*" "*memcg*" "tick_*" "handle_mm*" "task_work*"
+  #"*selinux*"
 
 echo "# of functions now being traced: $(wc -l set_ftrace_filter|cut -f1 -d' ')"
 
@@ -227,7 +230,7 @@ echo ${CPUMASK} > tracing_cpumask
 
 touch ${TRIGGER_FILE} # doing this triggers the command and it runs
 
-pwd
+#pwd
 echo "[+] Tracing PID ${PID} on CPU 1 now ..."
 echo markers > trace_options
 echo 1 > tracing_on
@@ -236,19 +239,30 @@ echo 1 > tracing_on
  # caught in the trace...
  # Using a *trace marker* (as below) is very useful! We can search for the string
  # in the trace report and figure where the interesting portion actually is!
+ #---
+ # RELOOK:
+ # Pecuiliar: writing to the trace_marker pseudofile fails with
+ #  bash: echo: write error: Bad file descriptor
+ # on my VMs, but work fine on my native Linux system...
+ #---
 echo START > trace_marker
-#echo "@@@ START tracing ping PID ${PID} on CPU 1 now" > trace_marker
 wait ${PID}
 echo END > trace_marker
-#echo "@@@ END tracing ping PID ${PID} on CPU 1 now" > trace_marker
 echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
-# older way:
+
+# Older way: doing it this way, we seem to miss the ping itself!
 #echo 1 > tracing_on ; ping -c1 packtpub.com; echo 0 > tracing_on
 
 mkdir -p ${REPDIR} 2>/dev/null
 cp -f trace ${FTRC_REP} || die "report generation failed"
-echo "Ftrace report: $(ls -lh ${FTRC_REP})"
+
+# Make the report simpler to scan by only keeping lines relevant to the
+# ping-${PID} process !
+egrep "ping-${PID}|START|END" trace > ${REPDIR}/ping_only_$(date +%Y%m%d).txt
+
+echo "Ftrace reports:"
+ls -lh ${FTRC_REP} ${REPDIR}/ping_only_$(date +%Y%m%d).txt
 
 #---FYI---
 # hey, think on this, it's so much simpler with trace-cmd(1):
