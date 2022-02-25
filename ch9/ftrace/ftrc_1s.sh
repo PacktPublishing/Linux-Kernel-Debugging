@@ -32,7 +32,7 @@ cd /sys/kernel/tracing
 reset_ftrace
 
 grep -q -w function_graph available_tracers || die "tracer specified function_graph unavailable"
-echo function_graph > current_tracer
+echo function_graph > current_tracer || die "setting function_graph plugin failed"
 echo 1 > options/funcgraph-proc
 echo 1 > options/latency-format
 
