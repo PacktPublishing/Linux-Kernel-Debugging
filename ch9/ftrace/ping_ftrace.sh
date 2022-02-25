@@ -102,7 +102,7 @@ reset_ftrace
 tracer=function_graph
 grep -q -w ${tracer} available_tracers || die "tracer specified ${tracer} unavailable"
 echo "[+] tracer : ${tracer}"
-echo function_graph > current_tracer || die "setting function_graph tracer failed"
+echo ${tracer} > current_tracer || die "setting function_graph tracer failed"
 
 #----------- Options -------------------
 echo "[+] setting options"
@@ -179,7 +179,7 @@ fi
 #--- Get rid of unrequired funcs!
 # NOTE: depending on your particular kernel ver and config, this list of funcs
 # to remove can vary.
-echo "[+] filter: remove unwanted functions"
+echo "[+] filter: remove unwanted functions          (patience, pl...)"
 filterfunc_remove "*idle*" "tick_nohz_idle_stop_tick" "rcu_*" "*__rcu_*" \
   "*down_write*" "*up_write*" "*down_read*" "*up_read*" \
   "*get_task_policy*" "*kthread_blkcg*" "*kthread_blkcg*" \
@@ -230,7 +230,8 @@ touch ${TRIGGER_FILE} # doing this triggers the command and it runs
 
 #pwd
 echo "[+] Tracing PID ${PID} on CPU 1 now ..."
-echo markers > trace_options
+#echo markers > trace_options
+echo > trace  # ensure the trace buffer is empty
 echo 1 > tracing_on
  # So, whatever happens here in the kernel gets traced; thus, it's not
  # completely exclusive to only our process of interest; other stuff can get
@@ -243,9 +244,9 @@ echo 1 > tracing_on
  #  bash: echo: write error: Bad file descriptor
  # ??
  #---
-echo 'START' > trace_marker
+#echo 'START' > trace_marker
 wait ${PID}
-echo 'END' > trace_marker
+#echo 'END' > trace_marker
 echo 0 > tracing_on
 rm -f ${TRIGGER_FILE}
 
@@ -254,13 +255,8 @@ rm -f ${TRIGGER_FILE}
 
 mkdir -p ${REPDIR} 2>/dev/null
 cp -f trace ${FTRC_REP} || die "report generation failed"
-
-# Make the report simpler to scan by only keeping lines relevant to the
-# ping-${PID} process !
-egrep "ping-${PID}|START|END" trace > ${REPDIR}/ping_only_$(date +%Y%m%d).txt
-
-echo "Ftrace reports:"
-ls -lh ${FTRC_REP} ${REPDIR}/ping_only_$(date +%Y%m%d).txt
+echo "Ftrace report:"
+ls -lh ${FTRC_REP}
 
 #---FYI---
 # hey, think on this, it's so much simpler with trace-cmd(1):
