@@ -98,10 +98,13 @@ f=$(which reset-ftrace-perf)
   echo "running '$f -q' now..."
   $f -q
 }
+
+# IMP / TIP
 # Tracing is ON after reset! turn it Off until we're good and ready
 #echo "tracing : " ; cat tracing_on
 echo 0 > tracing_on
-echo > trace  # ensure the trace buffer is empty
+# plus, ensure the trace buffer is empty
+echo > trace
 }
 
 runcmd()
