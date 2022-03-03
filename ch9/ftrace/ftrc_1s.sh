@@ -37,7 +37,7 @@ echo 1 > options/funcgraph-proc
 echo 1 > options/latency-format
 
 echo "Tracing with function_graph for 1s ..."
-echo 1 > tracing_on ; sleep 1; echo 0 > tracing_on
+echo 1 > tracing_on ; sleep 1 ; echo 0 > tracing_on
 mkdir -p ${REPDIR} 2>/dev/null
 cp trace ${FTRC_REP}
 ls -lh ${FTRC_REP}

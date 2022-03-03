@@ -239,7 +239,7 @@ echo 1 > tracing_on
  # Using a *trace marker* (as below) is very useful! We can search for the string
  # in the trace report and figure where the interesting portion actually is!
  #---
- # RELOOK:
+ # TODO / RELOOK:
  # Peculiar: writing to the trace_marker pseudofile fails with
  #  bash: echo: write error: Bad file descriptor
  # ??
