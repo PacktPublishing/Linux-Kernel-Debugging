@@ -1,7 +1,7 @@
 #!/bin/bash
 # ch9/trace-cmd/trc-cmd1.sh
 # Simple wrapper over trace-cmd; same as trc-cmd1.sh except that here,
-# we ALSO trace only the e1000 (network driver) module!
+# we trace only the e1000 (network driver) module!
 [ $# -ne 1 ] && {
   echo "Usage: $0 report-file"
   exit 1

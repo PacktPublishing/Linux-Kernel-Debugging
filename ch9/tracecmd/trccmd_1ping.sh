@@ -1,6 +1,6 @@
 #!/bin/bash
 # ch9/trace-cmd/trc-cmd1.sh
-# Simple wrapper over trace-cmd
+# Simple wrapper over trace-cmd- trace doing a single ping
 usage() {
   echo "Usage: $0 option
 option = -f : show in function_graph format
@@ -17,6 +17,7 @@ runcmd()
 #--- 'main'
 [ $(id -u) -ne 0 ] && {
   echo "$0: needs root."
+  usage
   exit 1
 }
 [ $# -ne 1 ] && {
