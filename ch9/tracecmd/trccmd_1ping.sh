@@ -17,6 +17,7 @@ runcmd()
 #--- 'main'
 [ $(id -u) -ne 0 ] && {
   echo "$0: needs root."
+  usage
   exit 1
 }
 [ $# -ne 1 ] && {
