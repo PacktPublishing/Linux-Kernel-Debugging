@@ -18,10 +18,11 @@
  *
  * For details, please refer the book, Ch 10.
  */
-#define pr_fmt(fmt) "%s:%s():%d: " fmt, KBUILD_MODNAME, __func__, __LINE__
+#define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/notifier.h>
+#include <linux/delay.h>
 
 /* The atomic_notifier_chain_[un]register() api's are GPL-exported! */
 MODULE_LICENSE("Dual MIT/GPL");
@@ -34,25 +35,35 @@ static void	dev_ring_alarm(void)
 	pr_emerg("!!! ALARM !!!\n");
 }
 
-static int mypanic(struct notifier_block *nb, unsigned long code, void *data)
+static int mypanic_handler(struct notifier_block *nb, unsigned long val, void *data)
 {
 	pr_emerg("\n************ Panic : SOUNDING ALARM ************\n\
-	code = %lu data:%s\n",
-		code, data == NULL ? "<none>" : (char *)data);
+val = %lu\n\
+data(str) = \"%s\"\n", val, (char *)data);
 	dev_ring_alarm();
 
 	return NOTIFY_OK;
 }
 
 static struct notifier_block mypanic_nb = {
-	.notifier_call = mypanic,
+	.notifier_call = mypanic_handler,
 //	.priority = INT_MAX
 };
 
 static int __init panic_notifier_lkm_init(void)
 {
-	if (atomic_notifier_chain_register(&panic_notifier_list, &mypanic_nb);
+	atomic_notifier_chain_register(&panic_notifier_list, &mypanic_nb);
 	pr_info("Registered panic notifier\n");
+
+	/*
+	 * Make #if 1 to have this module panic all by itself :-)
+	 * Else, we use our ../cause_oops_panic.sh script to trigger an
+	 * Oops and kernel panic!
+	 */
+#if 0
+	mdelay(500);
+	panic("Linux Kernel Debugging!");
+#endif
 
 	return 0;		/* success */
 }
