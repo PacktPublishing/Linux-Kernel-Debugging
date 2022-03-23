@@ -87,7 +87,7 @@ endif
 # We always keep the dynamic debug facility enabled; this allows us to turn
 # dynamically turn on/off debug printk's later... To disable it simply comment
 # out the following line
-ccflags-y   += -DDYNAMIC_DEBUG_MODULE
+ccflags-y   += -DDYNAMIC_DEBUG_MODULE -std=gnu11
 
 KMODDIR ?= /lib/modules/$(shell uname -r)
 STRIP := ${CROSS_COMPILE}strip
