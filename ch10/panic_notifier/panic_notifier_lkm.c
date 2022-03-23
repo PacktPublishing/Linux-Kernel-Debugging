@@ -11,8 +11,10 @@
  * From: Ch 10: Kernel panic, hangcheck and watchdogs
  ****************************************************************
  * Brief Description:
- * This module registers a custom panic handler callback, via the atomic
- * type of notifier chain. It will be invoked upon kernel panic.
+ * This module is a simple PoC; it registers a custom panic handler callback,
+ * by registering with the kernel's predefined panic notifier chain (an atomic
+ * type of notifier chain). Thus, our custom panic handler will be invoked upon
+ * kernel panic.
  *
  * For details, please refer the book, Ch 10.
  */
@@ -20,52 +22,44 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/notifier.h>
-//#include <asm-generic/bug.h>
 
+/* The atomic_notifier_chain_[un]register() api's are GPL-exported! */
 MODULE_LICENSE("Dual MIT/GPL");
 
-static u32 armsp;
-static void arm_getreg(void)
+/* Do what's required here for the product/project,
+ * but keep it simple. Left essentially empty here..
+ */
+static void	dev_ring_alarm(void)
 {
-#if defined CONFIG_ARM
-	__asm__ __volatile__ (
-		"mov r3, sp"
-		: "=r" (armsp) /* output operands */
-		:              /* input operands */
-		: "r3");       /* clobbers */
-#endif
+	pr_emerg("!!! ALARM !!!\n");
 }
 
-static int mypanic(struct notifier_block *nb,
-				  unsigned long code, void *_param)
+static int mypanic(struct notifier_block *nb, unsigned long code, void *data)
 {
-	int loc=5;
+	pr_emerg("\n************ Panic : SOUNDING ALARM ************\n\
+	code = %lu data:%s\n",
+		code, data == NULL ? "<none>" : (char *)data);
+	dev_ring_alarm();
 
-	pr_emerg("Panic !ALARM! @ %s_%s_%d\n", __FILE__, __FUNCTION__, __LINE__);
-	dump_stack();
-#if defined CONFIG_ARM
-	arm_getreg();
-	pr_emerg("loc=0x%p, ARM stack ptr = 0x%x\n", &loc, armsp);
-#endif
 	return NOTIFY_OK;
 }
 
-static struct notifier_block mypanic_notifier_block = {
+static struct notifier_block mypanic_nb = {
 	.notifier_call = mypanic,
-	.next = NULL,
-	.priority = INT_MAX
+//	.priority = INT_MAX
 };
 
 static int __init panic_notifier_lkm_init(void)
 {
-    atomic_notifier_chain_register(&panic_notifier_list, &mypanic_notifier_block);
+	if (atomic_notifier_chain_register(&panic_notifier_list, &mypanic_nb);
 	pr_info("Registered panic notifier\n");
 
-	return 0;  /* success */
+	return 0;		/* success */
 }
+
 static void __exit panic_notifier_lkm_exit(void)
 {
-    atomic_notifier_chain_unregister(&panic_notifier_list, &mypanic_notifier_block);
+	atomic_notifier_chain_unregister(&panic_notifier_list, &mypanic_nb);
 	pr_info("Unregistered panic notifier\n");
 }
 
