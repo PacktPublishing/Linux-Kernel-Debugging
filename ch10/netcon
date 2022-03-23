@@ -21,4 +21,5 @@ lsmod|grep "^netconsole" || {
   echo "netconsole module not loaded?"
   exit 1
 }
+sudo dmesg|grep "netconsole:"
 exit 0
