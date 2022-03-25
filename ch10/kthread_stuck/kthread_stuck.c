@@ -33,11 +33,17 @@
 #include "../../convenient.h"
 
 #define KTHREAD_NAME	"kt_stuck"
+#define DO_SOFT_LOCKUP  1
+#define DO_HARD_LOCKUP  2
 
 MODULE_AUTHOR("[insert name]");
 MODULE_DESCRIPTION("a simple LKM to demo the kernel softlockup detector!");
 MODULE_LICENSE("Dual MIT/GPL");	// or whatever
 MODULE_VERSION("0.1");
+
+static int lockup_type = DO_SOFT_LOCKUP;
+module_param(lockup_type, int, 0);
+MODULE_PARM_DESC(lockup_type, "specify the lockup type; pass 1 for soft lockup (default), 2 for hard lockup");
 
 static struct task_struct *gkthrd_ts;
 static spinlock_t spinlock;
@@ -61,12 +67,22 @@ static int simple_kthread(void *arg)
 	while(!kthread_should_stop()) {
 		//------------------------------------
 		pr_info("DELIBERATELY spinning on CPU core now...\n");
-		spin_lock(&spinlock);
-		while (i < 10000000000) {
+
+		if (likely(lockup_type == DO_SOFT_LOCKUP))
+			spin_lock(&spinlock);
+		else
+			spin_lock_irq(&spinlock);
+
+		while (i < 10000000000) { // adjust these arbit #s for your system if reqd..
 			i ++;
-			if (!(i%10000000)) pr_cont("%llu ", i);
+			if (!(i%50000000))
+				PRINT_CTX();
 		}
-		spin_unlock(&spinlock);
+
+		if (likely(lockup_type == DO_SOFT_LOCKUP))
+			spin_unlock(&spinlock);
+		else
+			spin_unlock_irq(&spinlock);
 		//------------------------------------
 
 		pr_info("FYI, I, kernel thread PID %d, am going to sleep now...\n",
@@ -91,6 +107,12 @@ static int simple_kthread(void *arg)
 static int kthread_simple_init(void)
 {
 	int ret=0;
+
+	if (lockup_type != DO_SOFT_LOCKUP && lockup_type != DO_HARD_LOCKUP) {
+		pr_info("pass parameter lockup_type correctly\n");
+		return -EINVAL;
+	}
+	pr_info("lockup type to test: %s\n", lockup_type == DO_HARD_LOCKUP ? "hard":"soft");
 
 	spin_lock_init(&spinlock);
 	pr_info("Lets now create a kernel thread...\n");
