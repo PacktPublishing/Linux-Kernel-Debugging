@@ -68,7 +68,7 @@ static int simple_kthread(void *arg)
 		//------------------------------------
 		pr_info("DELIBERATELY spinning on CPU core now...\n");
 
-		if (likely(lockup_type == DO_SOFT_LOCKUP))
+		if (lockup_type == DO_SOFT_LOCKUP)
 			spin_lock(&spinlock);
 		else
 			spin_lock_irq(&spinlock);
@@ -79,7 +79,7 @@ static int simple_kthread(void *arg)
 				PRINT_CTX();
 		}
 
-		if (likely(lockup_type == DO_SOFT_LOCKUP))
+		if (lockup_type == DO_SOFT_LOCKUP)
 			spin_unlock(&spinlock);
 		else
 			spin_unlock_irq(&spinlock);
