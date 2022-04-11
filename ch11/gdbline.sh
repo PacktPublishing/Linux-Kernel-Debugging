@@ -31,19 +31,17 @@ cd /sys/module/$1/sections
 echo "Copy-paste the following lines into GDB"
 echo "---snip---"
 
-[ -f .text ] && {
-   echo -n add-symbol-file $2 $(/bin/cat .text)
-   echo  " \\"
-} || [ -f .init.text ] && {
-   echo -n add-symbol-file $2 $(/bin/cat .init.text)
-}
+[ -f .text ] && echo -n add-symbol-file $2 $(/bin/cat .text)
 
-for section in .[a-z]* *; do
+for section in .[a-z]*
+do
+    #echo "sec = ${section}"
     if [ ${section} != ".text" -o ${section} != ".init.text" ]; then
 	    echo  " \\"
 	    echo -n "       -s" ${section} $(/bin/cat ${section})
     fi
 done
+
 echo "
 ---snip---"
 echo
