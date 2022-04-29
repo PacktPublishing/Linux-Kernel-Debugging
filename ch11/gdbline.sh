@@ -36,10 +36,13 @@ echo "---snip---"
 for section in .[a-z]*
 do
     #echo "sec = ${section}"
-    if [ ${section} != ".text" -o ${section} != ".init.text" ]; then
+	case "${section}" in
+     .strtab|.symtab|.text) continue
+             ;;
+     *)
 	    echo  " \\"
 	    echo -n "       -s" ${section} $(/bin/cat ${section})
-    fi
+    esac
 done
 
 echo "
