@@ -30,7 +30,7 @@
 # This enables you to use this Makefile as a template; just update this variable!
 # As well, the MYDEBUG variable (see it below) can be set to 'y' or 'n' (no being
 # the default)
-FNAME_C := kmembugs_test
+FNAME_C := kgdb_try
 #------------------------------------------------------------------
 
 # To support cross-compiling for kernel modules:
@@ -52,18 +52,21 @@ else
   # 'KDIR' is the Linux 'kernel headers' package on your host system; this is
   # usually an x86_64, but could be anything, really (f.e. building directly
   # on a Raspberry Pi implies that it's the host)
-  KDIR ?= /lib/modules/$(shell uname -r)/build
+  #KDIR ?= /lib/modules/$(shell uname -r)/build
+  #@@@@@@@@@@@@ NOTE! SPECIAL CASE @@@@@@@@@@@@@@@@@
+  # We specify the build dir as the linux-5.10.3 kernel src tree; this is as
+  # we're using this as the target x86_64 kernel and debugging this module over
+  # KGDB
+  KDIR ?= ../images/linux-5.10.3
 endif
 
 # Compiler
 CC     := $(CROSS_COMPILE)gcc
 #CC     := $(CROSS_COMPILE)gcc-10
+#CC := clang
 
 PWD            := $(shell pwd)
-# Special case here: we have 2 source files; compile and then link them into
-# one .ko
-obj-m          += test_kmembugs.o
-test_kmembugs-objs := ${FNAME_C}.o debugfs_kmembugs.o
+obj-m          += ${FNAME_C}.o
 
 #--- Debug or production mode?
 # Set the MYDEBUG variable accordingly to y/n resp.
@@ -80,15 +83,11 @@ ifeq (${MYDEBUG}, y)
 
 # https://www.kernel.org/doc/html/latest/kbuild/makefiles.html#compilation-flags
 # EXTRA_CFLAGS deprecated; use ccflags-y
-  ifeq (${CC}, clang)
-     ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer
-  else
-     ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
-  endif
+  ccflags-y   += -DDEBUG -g -ggdb -gdwarf-4 -Og -Wall -fno-omit-frame-pointer -fvar-tracking-assignments
   # man gcc: "...-Og may result in a better debugging experience"
 else
   INSTALL_MOD_STRIP := 1
-  #ccflags-y   += --strip-debug
+  ccflags-y   += -UDEBUG
 endif
 # We always keep the dynamic debug facility enabled; this allows us to turn
 # dynamically turn on/off debug printk's later... To disable it simply comment
@@ -107,7 +106,7 @@ all:
 	@${CC} --version|head -n1
 	@echo
 	make -C $(KDIR) M=$(PWD) modules
-	$(shell if [ -f ${FNAME_C}.ko -a "${MYDEBUG}" != "y" ] ; then ${STRIP} --strip-debug ./${FNAME_C}.ko; fi)
+	$(shell [ "${MYDEBUG}" != "y" ] && ${STRIP} --strip-debug ./${FNAME_C}.ko)
 install:
 	@echo
 	@echo "--- installing ---"
@@ -117,7 +116,7 @@ install:
 	@echo " [Now for the 'sudo make install' ]"
 	sudo make -C $(KDIR) M=$(PWD) modules_install
 	@echo " [If !debug, stripping debug info from ${KMODDIR}/extra/${FNAME_C}.ko]"
-	$(shell if [ -f ${KMODDIR}/extra/${FNAME_C}.ko -a "${MYDEBUG}" != "y" ]; then sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
+	$(shell if [ "${MYDEBUG}" != "y" ]; then sudo ${STRIP} --strip-debug ${KMODDIR}/extra/${FNAME_C}.ko; fi)
 clean:
 	@echo
 	@echo "--- cleaning ---"

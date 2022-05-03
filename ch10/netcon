@@ -1,0 +1,25 @@
+#!/bin/bash
+# netcon
+# Simple helper script to get netconsole running on the sender system.
+# You'd typically want to run a net receiver on the receiver system:
+#  netcat -d -u -l 6666
+name=$(basename $0)
+[ $# -ne 1 ] && {
+  echo "Usage: ${name} receiver-IPaddr"
+  exit 1
+}
+
+SENDER_IFNAME=enp0s8  # !ASSUMPTION! update as reqd
+SENDER_IP=$(ifconfig ${SENDER_IFNAME} | awk '/inet /{print $2}')
+RECV_IFNAME=enp0s8  # !ASSUMPTION! update as reqd
+RECV_IP=$1
+
+sudo rmmod netconsole 2>/dev/null  # rm any stale instance first
+echo "sudo modprobe netconsole netconsole=@${SENDER_IP}/${SENDER_IFNAME},@${RECV_IP}/"
+sudo modprobe netconsole netconsole=@${SENDER_IP}/${SENDER_IFNAME},@${RECV_IP}/
+lsmod|grep "^netconsole" || {
+  echo "netconsole module not loaded?"
+  exit 1
+}
+sudo dmesg|grep "netconsole:"
+exit 0
