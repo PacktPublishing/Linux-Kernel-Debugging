@@ -52,7 +52,12 @@ else
   # 'KDIR' is the Linux 'kernel headers' package on your host system; this is
   # usually an x86_64, but could be anything, really (f.e. building directly
   # on a Raspberry Pi implies that it's the host)
-  KDIR ?= /lib/modules/$(shell uname -r)/build
+  #KDIR ?= /lib/modules/$(shell uname -r)/build
+  #@@@@@@@@@@@@ NOTE! SPECIAL CASE @@@@@@@@@@@@@@@@@
+  # We specify the build dir as the linux-5.10.3 kernel src tree; this is as
+  # we're using this as the target x86_64 kernel and debugging this module over
+  # KGDB
+  KDIR ?= ../images/linux-5.10.3
 endif
 
 # Compiler
