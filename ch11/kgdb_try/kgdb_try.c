@@ -41,9 +41,17 @@ static DECLARE_DELAYED_WORK(my_work, do_the_work);
  */
 static void do_the_work(struct work_struct *work)
 {
-	pr_info("In our workq function\n"); //: data=%d\n", priv->data);
-	memset(gdata-0x1000, 0xff, NUM);
-	memset(gdata, 0xff, NUM+PAGE_SIZE/2);
+	pr_info("In our workq function\n");
+	memset(gdata-0x1000, 0xff, NUM); // Oops !
+
+	/* Interesting! This bug (below) is caught at compile time on x86_64! Output:
+	 * ...
+	 * In function 'memset',
+     * inlined from 'do_the_work' at <...>/ch11/kgdb_try/kgdb_try.c:46:2:
+     * ./include/linux/string.h:381:3: error: call to '__write_overflow' declared with attribute error: detected write beyond size of object passed as 1st parameter
+     * 381 |   __write_overflow();
+	 */
+	//memset(gdata, 0xff, NUM+PAGE_SIZE/2);
 	pr_info("memset() done\n");
 }
 
@@ -58,8 +66,6 @@ static int __init kgdb_try_init(void)
 
 static void __exit kgdb_try_exit(void)
 {
-//	memset(gdata-0x1000, 0xff, NUM);
-//	memset(gdata, 0xff, NUM+PAGE_SIZE/2);
 	cancel_delayed_work_sync(&my_work);
 	pr_info("Goodbye\n");
 }
