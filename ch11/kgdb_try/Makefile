@@ -57,7 +57,7 @@ else
   # We specify the build dir as the linux-5.10.3 kernel src tree; this is as
   # we're using this as the target x86_64 kernel and debugging this module over
   # KGDB
-  KDIR ?= ../images/linux-5.10.3
+  KDIR ?= ~/linux-5.10.109
 endif
 
 # Compiler
