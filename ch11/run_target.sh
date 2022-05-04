@@ -1,17 +1,10 @@
 #!/bin/bash
-# run.sh
+# run_target.sh
 # Helper script to run Qemu such that the kernel waits in early boot for the
 # GDB client to connect
 # (Part of content covered in Linux Kernel Debugging, Kaiwan N Billimoria, Packt
 #  Ch 11 - Using Kernel GDB (KGDB))
 name=$(basename $0)
-
-### UPDATE this variable as per your setup ###
-#IMG=~/Linux-Kernel-Debugging/ch11/images
-#
-#KERNIMG=${IMG}/linux-5.10.3/arch/x86/boot/bzImage
-#ROOTFS=${IMG}/rootfs.img
-
 [ $# -ne 2 ] && {
   echo "Usage: ${name} path-to-kernel-[b]zimage path-to-rootfs-image"
   exit 1

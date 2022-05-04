@@ -54,7 +54,7 @@ else
   # on a Raspberry Pi implies that it's the host)
   #KDIR ?= /lib/modules/$(shell uname -r)/build
   #@@@@@@@@@@@@ NOTE! SPECIAL CASE @@@@@@@@@@@@@@@@@
-  # We specify the build dir as the linux-5.10.3 kernel src tree; this is as
+  # We specify the build dir as the linux-5.10.109 kernel src tree; this is as
   # we're using this as the target x86_64 kernel and debugging this module over
   # KGDB
   KDIR ?= ~/linux-5.10.109
