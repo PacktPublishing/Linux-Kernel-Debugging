@@ -26,15 +26,16 @@ runcmd()
 
 runcmd sudo apt update
 
-# typically for kernel build
+# packages typically required for kernel build
 runcmd sudo apt install -y bison flex libncurses5-dev ncurses-dev xz-utils libssl-dev libelf-dev util-linux tar
 
-# other...
+# other packages...
 runcmd sudo apt install -y bc bpfcc-tools bsdmainutils clang cmake cppcheck cscope curl \
  dwarves exuberant-ctags fakeroot flawfinder git gnome-system-monitor gnuplot \
- hwloc indent libnuma-dev libjson-c-dev linux-tools-$(uname -r) net-tools numactl \
- openjdk-16-jre perf-tools-unstable psmisc python3-distutils rt-tests smem \
- sparse stress sysfsutils tldr-py trace-cmd tree tuna virt-what
+ hwloc indent kernelshark libnuma-dev libjson-c-dev linux-tools-$(uname -r) \
+ net-tools numactl openjdk-16-jre openssh-server perf-tools-unstable psmisc \
+ python3-distutils rt-tests smem sparse stress sysfsutils tldr-py trace-cmd \
+ tree tuna virt-what
 
 # Add yourself to the vboxsf group (to gain access to VirtualBox shared folders);
 # will require you to log out and back in (or even reboot) to take effect
