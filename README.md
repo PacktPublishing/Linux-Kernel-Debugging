@@ -45,10 +45,11 @@ With the following software and hardware list you can run all code files present
 
 ### Software and Hardware List
 
-| Chapter  | Software required                      | OS required                        |
-| -------- | -------------------------------------- | -----------------------------------|
-| 1-12     | Oracle VirtualBox or Any Linux System  | Windows, Mac OS X, and Linux (Any) |
-| 1-12     | Visual Studio Code                     | Windows, Mac OS X, and Linux (Any) |
+| Chapter  | Software required                 | OS required                        |
+| -------- | ----------------------------------| -----------------------------------|
+| 1-12     | Oracle VirtualBox                 | Windows, Mac OS X, and Linux (Any) |
+| 1-12     | Ubuntu 21.04 or 21.10 LTS         | Windows, Mac OS X, and Linux (Any) |
+| 1-12     | Visual Studio Code                | Windows, Mac OS X, and Linux (Any) |
 
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](https://packt.link/2zUIX).
