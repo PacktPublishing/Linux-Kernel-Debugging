@@ -20,7 +20,7 @@ sudo insmod ./${KMOD}.ko verbose=${VERBOSE} || exit 1
 
 [ -z "${DYNDBG_CTRL}" ] && {
    echo "No dynamic debug control file available..."
-   exit
+   exit 1
 }
 
 echo "-- Module ${KMOD} now inserted, turn on any dynamic debug prints now --"
@@ -30,4 +30,4 @@ sudo bash -c "grep \"${KMOD} .* =_ \" ${DYNDBG_CTRL}" && echo "Wrt module ${KMOD
 sudo bash -c "echo -n \"module ${KMOD} +p\" > ${DYNDBG_CTRL}"
 sudo bash -c "grep \"${KMOD}\" ${DYNDBG_CTRL}"
 echo "--   All set, look up kernel log with, f.e., journalctl -k -f   --"
-
+exit 0

@@ -87,7 +87,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	param_fname_reg = (char __user *)regs->ARM_r1;
 #endif
 #ifdef CONFIG_ARM64
-	/* Aarch64 ABI:
+	/* AArch64 ABI:
 	 * First eight parameters to a function (and return val) are in the foll GPRs:
 	 *  x0 to x7 (64-bit GPRs)
 	 * See the kernel's pt_regs structure - rendition of the CPU registers here:
@@ -120,12 +120,12 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	 * Not really much choice here, we use it ...   :-/
 	 */
 #if 1
-	if (!strncpy_from_user(fname, param_fname_reg, PATH_MAX + 1))
+	if (!strncpy_from_user(fname, param_fname_reg, PATH_MAX))
 #else
 	/* Attempting to use the 'usual' copy_from_user() here simply causes a hard
 	 * hang... avoid it */
 	if (!copy_from_user(fname, (const char __user *)regs->si,
-			    strnlen_user((const char __user *)regs->si, PATH_MAX + 1)))
+			    strnlen_user((const char __user *)regs->si, PATH_MAX)))
 #endif
 		return -EFAULT;
 
@@ -188,12 +188,12 @@ static int __init kprobe_lkm_init(void)
 	pr_info("FYI, skip_if_not_vi is %s, verbose=%d\n", (skip_if_not_vi==1?"on":"off"), verbose);
 
 	/********* Possible SECURITY concern:
-     * We just assume the pointer passed is valid and okay.
+     * We just assume the function pointer passed is valid and okay.
 	 * Minimally, ensure that the passed function is NOT marked with any of:
 	 * __kprobes or nokprobe_inline annotation nor marked via the NOKPROBE_SYMBOL
-	 * macro
+	 * macro (and isn't blacklisted).
 	 */
-	fname = kzalloc(PATH_MAX + 1, GFP_ATOMIC);
+	fname = kzalloc(PATH_MAX, GFP_ATOMIC);
 	if (unlikely(!fname))
 		return -ENOMEM;
 

@@ -22,11 +22,13 @@ if [ ! -f ./${KMOD}.ko ]; then
   make || exit 1
 fi
 sudo rmmod ${KMOD} 2>/dev/null # rm any stale instance
+# Ideally, first check that the function to kprobe isn't blacklisted; we skip
+# this here, doing this in the more sophisticated ch4/kprobes/4_kprobe_helper/kp_load.sh script
 sudo insmod ./${KMOD}.ko kprobe_func=${FUNC_TO_KPROBE} verbose=${VERBOSE} skip_if_not_vi=${SKIP_NOT_VI} || exit 1
 
 [ -z "${DYNDBG_CTRL}" ] && {
    echo "No dynamic debug control file available..."
-   exit
+   exit 1
 }
 
 echo "-- Module ${KMOD} now inserted, turn on dynamic debug prints now --"
@@ -36,3 +38,4 @@ sudo bash -c "grep \"${KMOD} .* =_ \" ${DYNDBG_CTRL}" && echo "Wrt module ${KMOD
 sudo bash -c "echo -n \"module ${KMOD} +p\" > ${DYNDBG_CTRL}"
 sudo bash -c "grep \"${KMOD}\" ${DYNDBG_CTRL}"
 echo "--   All set, look up kernel log with, f.e., journalctl -k -f   --"
+exit 0

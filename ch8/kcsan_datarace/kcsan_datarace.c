@@ -11,6 +11,9 @@
  * From: Ch 8: Lock Debugging
  ****************************************************************
  * Brief Description:
+ * Here, we deliberately generate a data race by issuing concurrent plain
+ * writes on the same address; KCSAN should catch it! So, of course, we assume
+ * you're running this on a KCSAN-enabled debug kernel.
  *
  * For details, please refer the book, Ch 8.
  */
@@ -97,7 +100,7 @@ static int setup_work(void)
 static int __init kcsan_datarace_init(void)
 {
 	if (!race_2plain_w) {
-		pr_info("nothing to do\n");
+		pr_info("nothing to do (you're expected to set the module param race_2plain_w to True!)\n");
 		return -EINVAL;
 	}
 

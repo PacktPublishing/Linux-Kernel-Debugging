@@ -1,7 +1,8 @@
 #!/bin/bash
 # test.sh
 KMOD=2_kprobe
-FUNC_TO_KPROBE=vfs_write  #do_sys_open
+# You can change the function to kprobe here!
+FUNC_TO_KPROBE=do_sys_open    # vfs_write
 VERBOSE=1
 
 DYNDBG_CTRL=/sys/kernel/debug/dynamic_debug/control
@@ -17,6 +18,8 @@ if [ ! -f ./${KMOD}.ko ]; then
   make || exit 1
 fi
 sudo rmmod ${KMOD} 2>/dev/null # rm any stale instance
+# Ideally, first check that the function to kprobe isn't blacklisted; we skip
+# this here, doing this in the more sophisticated ch4/kprobes/4_kprobe_helper/kp_load.sh script
 sudo insmod ./${KMOD}.ko kprobe_func=${FUNC_TO_KPROBE} verbose=${VERBOSE} || exit 1
 
 [ -z "${DYNDBG_CTRL}" ] && {

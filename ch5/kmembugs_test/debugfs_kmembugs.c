@@ -112,7 +112,7 @@ static ssize_t dbgfs_run_testcase(struct file *filp, const char __user *ubuf, si
 		res2 = (char *)leak_simple2();	// caller's expected to free the memory!
 		pr_info(" res2 = \"%s\"\n",
 			res2 == NULL ? "<whoops, it's NULL>" : (char *)res2);
-		if (0)		// test: ensure it isn't freed by us, the caller
+		if (0)		/* test: ensure it isn't freed by us, the caller */
 			kfree((char *)res2);
 	} else if (!strncmp(udata, "3.3", 4))
 		leak_simple3();

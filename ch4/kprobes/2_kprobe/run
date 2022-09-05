@@ -1,10 +1,13 @@
+#!/bin/bash
+# ch4/kprobes/2_kprobe/run
 KMOD=2_kprobe
-echo "sudo dmesg -C && make && ./test.sh && sleep 1 && sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg"
 
-[ 1 -eq 1 ] && {
+# Try making the below condition true and then running...
+[ 0 -eq 1 ] && {
 sudo dmesg -C && make && ./test.sh && sleep .1
 vi /etc/passwd  # just to get vi running..; quit out of it immd
 sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg
 } || {
+echo "sudo dmesg -C && make && ./test.sh && sleep 1 && sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg"
 sudo dmesg -C && make && ./test.sh && sleep 1 && sudo rmmod ${KMOD} 2>/dev/null && sudo dmesg
 }

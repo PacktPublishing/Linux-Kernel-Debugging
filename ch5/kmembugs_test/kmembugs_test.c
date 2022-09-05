@@ -159,7 +159,8 @@ void *leak_simple2(void)
 }
 
 /*
- * This function runs in (hardirq) interrupt context
+ * This function runs in (hardirq) interrupt context.
+ * Invoked via the test case leak_simple3().
  */
 void irq_work_leaky(struct irq_work *irqwk)
 {
