@@ -303,11 +303,13 @@ void delay_sec(long val)
 	    s64 delta_ns = ktime_to_ns(ktime_sub(later, earlier));      \
         pr_info("delta: %lld ns", delta_ns);       \
 		if (delta_ns/1000 >= 1)                    \
-			pr_info(" %lld us", delta_ns/1000);    \
+			pr_cont(" (~ %lld us", delta_ns/1000);   \
 		if (delta_ns/1000000 >= 1)                 \
-			pr_info(" %lld ms", delta_ns/1000000); \
+			pr_cont(" ~ %lld ms", delta_ns/1000000); \
+		if (delta_ns/1000 >= 1)                    \
+			pr_cont(")\n");                         \
     } else  \
-        pr_warn("SHOW_DELTA(): *invalid* earlier > later?\n");  \
+        pr_warn("SHOW_DELTA(): *invalid* earlier > later? (check order of params)\n");  \
 } while (0)
 #endif   /* #ifdef __KERNEL__ */
 
