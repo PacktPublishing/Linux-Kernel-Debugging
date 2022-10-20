@@ -160,6 +160,10 @@ sa:
 
 # static analysis with sparse
 sa_sparse:
+ifeq (,$(shell which sparse))
+	$(error ERROR: install sparse first)
+endif
+
 	make clean
 	@echo
 	@echo "--- static analysis with sparse ---"
@@ -178,6 +182,9 @@ sa_gcc:
 
 # static analysis with flawfinder
 sa_flawfinder:
+ifeq (,$(shell which flawfinder))
+	$(error ERROR: install flawfinder first)
+endif
 	make clean
 	@echo
 	@echo "--- static analysis with flawfinder ---"
@@ -186,6 +193,9 @@ sa_flawfinder:
 
 # static analysis with cppcheck
 sa_cppcheck:
+ifeq (,$(shell which cppcheck))
+	$(error ERROR: install cppcheck first)
+endif
 	make clean
 	@echo
 	@echo "--- static analysis with cppcheck ---"
