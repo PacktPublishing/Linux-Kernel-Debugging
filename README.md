@@ -64,3 +64,7 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 He taught himself programming on his dad's PC in 1983. By the early 90s, he had discovered the joys of programming on Unix, and by 1997, on Linux!
 Kaiwan has worked on many aspects of the Linux system programming stack, including Bash, system programming in C, kernel internals, device drivers, and embedded Linux. He has actively worked on commercial/FOSS projects. His contributions include drivers for the mainline Linux OS and many smaller projects hosted on GitHub. His Linux passion feeds well into his passion for teaching these topics to engineers, which he has done for close to three decades now. He's the author of Hands-On System Programming with Linux and Linux Kernel Programming. He is a recreational ultrarunner too.
 
+### Download a free PDF
+
+ <i>If you have already purchased a print or Kindle version of this book, you can get a DRM-free PDF version at no cost.<br>Simply click on the link to claim your free PDF.</i>
+<p align="center"> <a href="https://packt.link/free-ebook/9781801075039">https://packt.link/free-ebook/9781801075039 </a> </p>
