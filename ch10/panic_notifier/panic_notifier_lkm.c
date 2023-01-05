@@ -21,7 +21,7 @@
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/notifier.h>
+#include <linux/panic_notifier.h>
 #include <linux/delay.h>
 
 /* The atomic_notifier_chain_[un]register() api's are GPL-exported! */
