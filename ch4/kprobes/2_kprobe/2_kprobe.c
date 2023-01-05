@@ -135,6 +135,9 @@ or nokprobe_inline, or is marked with the NOKPROBE_SYMBOL macro?\n", kprobe_func
 		return -EINVAL;
 	}
 	pr_info("registering kernel probe @ '%s'\n", kprobe_func);
+#ifdef SKIP_IF_NOT_VI
+	pr_info("NOTE: Skipping if not vi ...\n");
+#endif
 	spin_lock_init(&lock);
 
 	return 0;		/* success */

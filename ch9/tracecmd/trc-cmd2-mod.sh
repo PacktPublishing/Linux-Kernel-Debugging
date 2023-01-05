@@ -20,11 +20,11 @@ runcmd()
 }
 rep=$1
 
-lsmod|grep ${KMOD} || die "Module ${KMOD} isn't loaded"
+lsmod|grep -w ${KMOD} || die "Module ${KMOD} isn't loaded"
 runcmd sudo trace-cmd record -q -p function_graph -e net -e sock -e skb -e tcp -e udp \
- --module e1000 -F ping -c1 packtpub.com
+ --module ${KMOD} -F ping -c1 packtpub.com
 
 [ -f $1 ] && mv -f $1 $1.bkp
 runcmd sudo trace-cmd report -q -l  > $1
 # Typically, the report file is now pretty tiny (~ 4 to 5 KB in my tests)
-# as ONLY the e1000 related module/kernel functions show up in the trace.
+# as ONLY the $KMOD related module/kernel functions show up in the trace.

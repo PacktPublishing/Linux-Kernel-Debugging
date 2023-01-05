@@ -1,5 +1,5 @@
 /*
- * ch7/kmembugs_test/kmembugs_test.c
+ * ch5/kmembugs_test/kmembugs_test.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -8,7 +8,7 @@
  *  GitHub repository:
  *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 7: Debugging kernel memory issues
+ * From: Ch 5: Debugging kernel memory issues
  ****************************************************************
  * Brief Description:
  * kmembugs_test.c: this source file:
@@ -29,7 +29,7 @@
  * we do just this within the init and cleanup of this module
  * (note that these APIs require GPL licensing!).
  *
- * For details, please refer the book, Ch 7.
+ * For details, please refer the book, Ch 5.
  */
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 #include <linux/init.h>
