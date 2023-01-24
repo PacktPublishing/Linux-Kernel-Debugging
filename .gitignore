@@ -1,2 +1,7 @@
 # LKD book GitHub repo
-rootfs_deb*
+rootfs_deb.img.7z
+.*.swp
+*.bkp
+bkp/
+*.patch
+*.dat
