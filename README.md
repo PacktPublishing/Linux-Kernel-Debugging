@@ -57,7 +57,7 @@ With the following software and hardware list you can run all code files present
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](https://packt.link/2zUIX).
 
-*Known Errata*
+### Known Errata
 - PDF pg 509: 
 It says: "... In other words, automatically."
 
