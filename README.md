@@ -57,6 +57,13 @@ With the following software and hardware list you can run all code files present
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](https://packt.link/2zUIX).
 
+*Known Errata*
+- PDF pg 509: 
+It says: "... In other words, automatically."
+
+It should be: "... In other words, atomically."
+
+
 ### Related products <Other books you may enjoy>
 * Linux Kernel Programming Part 2 - Char Device Drivers and Kernel Synchronization[[Packt]](https://www.packtpub.com/free-ebook/linux-kernel-programming-part-2-char-device-drivers-and-kernel-synchronization/9781801079518) [[Amazon]](https://www.amazon.in/Linux-Kernel-Programming-Part-Synchronization-ebook/dp/B08ZSV58G8)
 
