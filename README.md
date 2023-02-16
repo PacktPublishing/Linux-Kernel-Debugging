@@ -63,6 +63,13 @@ It says: "... In other words, automatically."
 
 It should be: "... In other words, atomically."
 
+- PDF pg 127:
+It says: "... We need to interpret the PINT_CTX()
+macro's output."
+
+It should be: "... We need to interpret the PRINT_CTX()
+macro's output."
+
 
 ### Related products <Other books you may enjoy>
 * Linux Kernel Programming Part 2 - Char Device Drivers and Kernel Synchronization[[Packt]](https://www.packtpub.com/free-ebook/linux-kernel-programming-part-2-char-device-drivers-and-kernel-synchronization/9781801079518) [[Amazon]](https://www.amazon.in/Linux-Kernel-Programming-Part-Synchronization-ebook/dp/B08ZSV58G8)
