@@ -58,6 +58,10 @@ With the following software and hardware list you can run all code files present
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](https://packt.link/2zUIX).
 
 ### Known Errata
+- PDF pg 74:
+"For the size_t and ssize_t typedefs (which represent signed and unsigned integers respectively)..." should be: 
+"For the size_t and ssize_t typedefs (which represent unsigned and signed integers respectively)..."
+
 - PDF pg 509: 
 It says: "... In other words, automatically."
 
