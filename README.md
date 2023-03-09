@@ -62,17 +62,29 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 "For the size_t and ssize_t typedefs (which represent signed and unsigned integers respectively)..." should be: 
 "For the size_t and ssize_t typedefs (which represent unsigned and signed integers respectively)..."
 
-- PDF pg 509: 
-It says: "... In other words, automatically."
-
-It should be: "... In other words, atomically."
-
 - PDF pg 127:
 It says: "... We need to interpret the PINT_CTX()
 macro's output."
 
 It should be: "... We need to interpret the PRINT_CTX()
 macro's output."
+
+- PDF pg 137:
+The URL
+https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/
+include/asm/ptrace.h#L135
+
+should be
+https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/
+include/asm/ptrace.h#L15
+
+(same goes for the code comments)
+
+
+- PDF pg 509:
+It says: "... In other words, automatically."
+
+It should be: "... In other words, atomically."
 
 
 ### Related products <Other books you may enjoy>
