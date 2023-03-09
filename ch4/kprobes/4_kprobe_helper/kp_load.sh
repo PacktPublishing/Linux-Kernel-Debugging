@@ -1,5 +1,5 @@
 #!/bin/bash
-# ch6/kprobes/4_kprobe_helper/kp_load.sh
+# ch4/kprobes/4_kprobe_helper/kp_load.sh
 # ***************************************************************
 # This program is part of the source code released for the book
 #  "Linux Kernel Debugging"
@@ -8,7 +8,7 @@
 #  GitHub repository:
 #  https://github.com/PacktPublishing/Linux-Kernel-Debugging
 #
-# From: Ch 6: Debug via Instrumentation - Kprobes
+# From: Ch 4: Debug via Instrumentation - Kprobes
 #***************************************************************
 # Brief Description:
 # Our kprobes demo #4:
@@ -121,7 +121,7 @@ insert_kprobe()
 if [ ${PROBE_KERNEL} -eq 0 ] ; then
  local already_inserted=0
  local kmod_name=$(basename ${TARGET_MODULE::-3})  # rm the .ko too...
- lsmod|grep -q -w ${kmod_name} && already_inserted=1
+ lsmod|grep -w ${kmod_name} >/dev/null && already_inserted=1
 
 # echo "+++ already_inserted=${already_inserted}"
 
@@ -176,7 +176,7 @@ KPROBES_SUPPORTED=0
 }
 modprobe configs 2>/dev/null
 [ -f /proc/config.gz ] && {
-	zcat /proc/config.gz |grep -q -i kprobes && KPROBES_SUPPORTED=1
+	zcat /proc/config.gz |grep -i kprobes >/dev/null && KPROBES_SUPPORTED=1
 }
 [ ${KPROBES_SUPPORTED} -eq 0 ] && {
 	  echo "${name}: Kprobes does not seem to be supported on this kernel [2]."
@@ -251,7 +251,7 @@ check_function ${FUNCTION}
 
 if [ ${PROBE_KERNEL} -eq 0 ]; then
 	if [ ! -f ${TARGET_MODULE} ]; then
-		echo "${name}: kernel module '${TARGET_MODULE}' seems to be an invalid pathname, aborting now.."
+		echo "${name}: kernel module pathname '${TARGET_MODULE}' that you passed seems to be an invalid pathname, aborting now.."
 		exit 1
 	fi
 	echo "Target kernel Module: ${TARGET_MODULE}"
