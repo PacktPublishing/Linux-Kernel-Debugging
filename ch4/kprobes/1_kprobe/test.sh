@@ -20,7 +20,7 @@ if [ ! -f ./${KMOD}.ko ]; then
   make || exit 1
 fi
 sudo rmmod ${KMOD} 2>/dev/null # rm any stale instance
-sudo insmod ./${KMOD}.ko verbose=${VERBOSE} || exit 1
+sudo insmod ./${KMOD}.ko || exit 1
 
 echo "-- Module ${KMOD} now inserted, turn on any dynamic debug prints now --"
 sudo bash -c "grep \"${KMOD} .* =_ \" ${DYNDBG_CTRL}" && echo "Wrt module ${KMOD}, one or more dynamic debug prints are Off" || \
