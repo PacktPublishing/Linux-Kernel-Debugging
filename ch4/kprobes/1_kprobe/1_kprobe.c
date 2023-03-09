@@ -13,6 +13,10 @@
  * Brief Description:
  * Traditional and manual approach, simplest case: attaching a kprobe,
  * hard-coding it (to the open system call).
+ * NOTE- you might find that this particular call - do_sys_open() - isn't
+ * perhaps being issued often... leading to your thinking that the kprobe
+ * isn't working. It is... so, trying with other functions can be helpful
+ * at times...
  *
  * For details, please refer the book, Ch 4.
  */
@@ -27,6 +31,7 @@
 #include <linux/kprobes.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
@@ -65,6 +70,7 @@ static void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long f
 	pr_debug("\n"); // silly- just to see the output clearly via dmesg/journalctl
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 /*
  * fault_handler: this is called if an exception is generated for any
  * instruction within the pre- or post-handler, or when Kprobes
@@ -77,14 +83,22 @@ static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
 	return 0;
 }
 NOKPROBE_SYMBOL(handler_fault);
+#endif
 
 static int __init kprobe_lkm_init(void)
 {
 	/* Register the kprobe handler */
 	kpb.pre_handler = handler_pre;
 	kpb.post_handler = handler_post;
+	// 5.14: commit ec6aba3; 'kprobes: Remove kprobe::fault_handler'
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 	kpb.fault_handler = handler_fault;
+#endif
+#if 1
 	kpb.symbol_name = "do_sys_open";
+#else
+	kpb.symbol_name = "kmem_cache_alloc";
+#endif
 	if (register_kprobe(&kpb)) {
 		pr_alert("register_kprobe on do_sys_open() failed!\n");
 		return -EINVAL;
