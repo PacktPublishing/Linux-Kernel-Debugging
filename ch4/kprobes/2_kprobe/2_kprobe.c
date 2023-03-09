@@ -1,5 +1,5 @@
 /*
- * ch6/kprobes/2_kprobe/2_kprobe.c
+ * ch4/kprobes/2_kprobe/2_kprobe.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -8,14 +8,14 @@
  *  GitHub repository:
  *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 6: Debug via Instrumentation - Kprobes
+ * From: Ch 4: Debug via Instrumentation - Kprobes
  ****************************************************************
  * Brief Description:
  * Traditional and manual approach: attaching a kprobe, slightly better,
  * soft-coding it via a module parameter (to the open system call);
  * via a module parameter.
  *
- * For details, please refer the book, Ch 6.
+ * For details, please refer the book, Ch 4.
  */
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 
@@ -28,15 +28,16 @@
 #include <linux/kprobes.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKD book:ch6/2_kprobes/2_kprobe: simple Kprobes demo module with modparam");
+MODULE_DESCRIPTION("LKD book:ch4/2_kprobes/2_kprobe: simple Kprobes demo module with modparam");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
-//#undef SKIP_IF_NOT_VI
-#define SKIP_IF_NOT_VI
+#undef SKIP_IF_NOT_VI
+//#define SKIP_IF_NOT_VI
 
 static spinlock_t lock;
 static struct kprobe kpb;
@@ -94,6 +95,7 @@ static void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long f
 	spin_unlock(&lock);
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 /*
  * fault_handler: this is called if an exception is generated for any
  * instruction within the pre- or post-handler, or when Kprobes
@@ -106,6 +108,7 @@ static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
 	return 0;
 }
 NOKPROBE_SYMBOL(handler_fault);
+#endif
 
 static int __init kprobe_lkm_init(void)
 {
@@ -126,7 +129,9 @@ static int __init kprobe_lkm_init(void)
 	/* Register the kprobe handler */
 	kpb.pre_handler = handler_pre;
 	kpb.post_handler = handler_post;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 	kpb.fault_handler = handler_fault;
+#endif
 	kpb.symbol_name = kprobe_func;
 	if (register_kprobe(&kpb)) {
 		pr_alert("register_kprobe failed!\n\

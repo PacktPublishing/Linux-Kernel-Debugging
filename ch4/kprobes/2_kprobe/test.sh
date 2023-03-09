@@ -2,7 +2,7 @@
 # test.sh
 KMOD=2_kprobe
 # You can change the function to kprobe here!
-FUNC_TO_KPROBE=do_sys_open    # vfs_write
+FUNC_TO_KPROBE=kmem_cache_alloc  #do_sys_open    # vfs_write
 VERBOSE=1
 
 DYNDBG_CTRL=/sys/kernel/debug/dynamic_debug/control
