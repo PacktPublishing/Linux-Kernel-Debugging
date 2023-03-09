@@ -11,7 +11,7 @@ name=$(basename $0)
 
 SENDER_IFNAME=enp0s8  # !ASSUMPTION! update as reqd
 SENDER_IP=$(ifconfig ${SENDER_IFNAME} | awk '/inet /{print $2}')
-RECV_IFNAME=enp0s8  # !ASSUMPTION! update as reqd
+#RECV_IFNAME=enp0s8  # !ASSUMPTION! update as reqd
 RECV_IP=$1
 
 sudo rmmod netconsole 2>/dev/null  # rm any stale instance first
