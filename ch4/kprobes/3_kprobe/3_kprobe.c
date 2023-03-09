@@ -1,5 +1,5 @@
 /*
- * ch6/kprobes/3_kprobe/3_kprobe.c
+ * ch4/kprobes/3_kprobe/3_kprobe.c
  ***************************************************************
  * This program is part of the source code released for the book
  *  "Linux Kernel Debugging"
@@ -8,7 +8,7 @@
  *  GitHub repository:
  *  https://github.com/PacktPublishing/Linux-Kernel-Debugging
  *
- * From: Ch 6: Debug via Instrumentation - Kprobes
+ * From: Ch 4: Debug via Instrumentation - Kprobes
  ****************************************************************
  * Brief Description:
  * Traditional and manual approach: attaching a kprobe via a module parameter
@@ -17,7 +17,7 @@
  * To gain access to the second parameter (holding the pointer to the file
  * being opened), we use our knowledge of the relevant processor ABI.
  *
- * For details, please refer the book, Ch 6.
+ * For details, please refer the book, Ch 4.
  */
 #define pr_fmt(fmt) "%s:%s(): " fmt, KBUILD_MODNAME, __func__
 
@@ -30,10 +30,11 @@
 #include <linux/kprobes.h>
 #include <linux/ptrace.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 #include "../../../convenient.h"
 
 MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKD book:ch6/kprobes/3_kprobe: simple Kprobes demo module with fname displayed");
+MODULE_DESCRIPTION("LKD book:ch4/kprobes/3_kprobe: simple Kprobes demo module with fname displayed");
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_VERSION("0.1");
 
@@ -82,7 +83,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	 * First four parameters to a function are in the foll GPRs:
 	 *  r0, r1, r2, r3
 	 * See the kernel's pt_regs structure - rendition of the CPU registers here:
-	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/uapi/asm/ptrace.h#L135
+	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/uapi/asm/ptrace.h#L15
 	 */
 	param_fname_reg = (char __user *)regs->ARM_r1;
 #endif
@@ -91,7 +92,7 @@ static int handler_pre(struct kprobe *p, struct pt_regs *regs)
 	 * First eight parameters to a function (and return val) are in the foll GPRs:
 	 *  x0 to x7 (64-bit GPRs)
 	 * See the kernel's pt_regs structure - rendition of the CPU registers here:
-	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm64/include/asm/ptrace.h#L173
+	 * https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm64/include/asm/ptrace.h#L15
 	 */
 	param_fname_reg = (char __user *)regs->regs[1];
 #endif
@@ -162,6 +163,7 @@ static void handler_post(struct kprobe *p, struct pt_regs *regs, unsigned long f
 	spin_unlock(&lock);
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 /*
  * fault_handler: this is called if an exception is generated for any
  * instruction within the pre- or post-handler, or when Kprobes
@@ -173,8 +175,8 @@ static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
 	/* Return 0 because we don't handle the fault. */
 	return 0;
 }
-
 NOKPROBE_SYMBOL(handler_fault);
+#endif
 
 static int __init kprobe_lkm_init(void)
 {
@@ -188,7 +190,7 @@ static int __init kprobe_lkm_init(void)
 	pr_info("FYI, skip_if_not_vi is %s, verbose=%d\n", (skip_if_not_vi==1?"on":"off"), verbose);
 
 	/********* Possible SECURITY concern:
-     * We just assume the function pointer passed is valid and okay.
+	 * We just assume the function pointer passed is valid and okay.
 	 * Minimally, ensure that the passed function is NOT marked with any of:
 	 * __kprobes or nokprobe_inline annotation nor marked via the NOKPROBE_SYMBOL
 	 * macro (and isn't blacklisted).
@@ -200,7 +202,9 @@ static int __init kprobe_lkm_init(void)
 	/* Register the kprobe handler */
 	kpb.pre_handler = handler_pre;
 	kpb.post_handler = handler_post;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0)
 	kpb.fault_handler = handler_fault;
+#endif
 	kpb.symbol_name = kprobe_func;
 	if (register_kprobe(&kpb)) {
 		pr_alert("register_kprobe failed!\n\
