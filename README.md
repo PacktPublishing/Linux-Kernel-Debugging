@@ -87,6 +87,15 @@ It says: "... In other words, automatically."
 It should be: "... In other words, atomically."
 
 
+### UPDATES / Observations
+
+- PDF pg 126:
+
+As of now (early 2023), attempting to trace file open's via the `do_sys_open()` doesn't seem to cut it...
+I find that instead using the `do_sys_openat2()` works!
+So, substitute this function in place of the `do_sys_open()` being used and you may get better results...
+
+
 ### Related products <Other books you may enjoy>
 * Linux Kernel Programming Part 2 - Char Device Drivers and Kernel Synchronization[[Packt]](https://www.packtpub.com/free-ebook/linux-kernel-programming-part-2-char-device-drivers-and-kernel-synchronization/9781801079518) [[Amazon]](https://www.amazon.in/Linux-Kernel-Programming-Part-Synchronization-ebook/dp/B08ZSV58G8)
 
