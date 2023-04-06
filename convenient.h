@@ -295,6 +295,8 @@ void delay_sec(long val)
  * Parameters:
  *  @later, @earlier : nanosecond-accurate timestamps
  * Expect that @later > @earlier
+ * 
+ * Grab a timestamp using the ktime_get_real_ns() API..
  */
 #include <linux/jiffies.h>
 #include <linux/ktime.h>
