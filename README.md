@@ -80,6 +80,14 @@ include/asm/ptrace.h#L15
 
 (same goes for the code comments)
 
+- PDF pg 235:
+Broken link: updated link is:
+https://www.kernel.org/doc/html/latest/mm/slub.html
+
+- PDF pg 236:
+Broken link: updated link is:
+https://www.kernel.org/doc/html/latest/mm/slub.html#emergency-operations
+
 
 - PDF pg 509:
 It says: "... In other words, automatically."
