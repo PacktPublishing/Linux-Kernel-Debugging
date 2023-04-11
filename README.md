@@ -94,6 +94,8 @@ It should be: "... In other words, atomically."
 As of now (early 2023), attempting to trace file open's via the `do_sys_open()` doesn't seem to cut it...
 I find that instead using the `do_sys_openat2()` works!
 So, substitute this function in place of the `do_sys_open()` being used and you may get better results...
+(In fact, our Figure 4.13 shows the `do_sys_openat2()` being invoked!).
+
 
 
 ### Related products <Other books you may enjoy>
