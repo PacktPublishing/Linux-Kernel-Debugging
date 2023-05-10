@@ -71,12 +71,10 @@ macro's output."
 
 - PDF pg 137:
 The URL
-https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/
-include/asm/ptrace.h#L135
+https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/asm/ptrace.h#L135
 
 should be
-https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/
-include/asm/ptrace.h#L15
+https://elixir.bootlin.com/linux/v5.10.60/source/arch/arm/include/asm/ptrace.h#L15
 
 (same goes for the code comments)
 
@@ -90,7 +88,7 @@ https://www.kernel.org/doc/html/latest/mm/slub.html#emergency-operations
 
 - PDF pg 262:
 Broken link: fixed updated link is:
-https://elixir.bootlin.com/linux/v5.10.60/source/drivers/net/ethernet/cadence/macb_main.c#L3578 
+https://elixir.bootlin.com/linux/v5.10.60/source/drivers/net/ethernet/cadence/macb_main.c#L3578
 
 - PDF pg 283:
 Broken link: fixed updated link is:
