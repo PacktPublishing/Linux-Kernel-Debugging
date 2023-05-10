@@ -81,13 +81,24 @@ include/asm/ptrace.h#L15
 (same goes for the code comments)
 
 - PDF pg 235:
-Broken link: updated link is:
+Broken link: fixed updated link is:
 https://www.kernel.org/doc/html/latest/mm/slub.html
 
 - PDF pg 236:
-Broken link: updated link is:
+Broken link: fixed updated link is:
 https://www.kernel.org/doc/html/latest/mm/slub.html#emergency-operations
 
+- PDF pg 262:
+Broken link: fixed updated link is:
+https://elixir.bootlin.com/linux/v5.10.60/source/drivers/net/ethernet/cadence/macb_main.c#L3578 
+
+- PDF pg 283:
+Broken link: fixed updated link is:
+https://lore.kernel.org/lkml/1420845382-25815-1-git-send-email-khoroshilov@ispras.ru/
+
+- PDF pg 287:
+Broken link: fixed updated link is:
+https://docs.kernel.org/mm/slub.html#short-users-guide-for-slub
 
 - PDF pg 509:
 It says: "... In other words, automatically."
