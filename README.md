@@ -98,10 +98,14 @@ https://lore.kernel.org/lkml/1420845382-25815-1-git-send-email-khoroshilov@ispra
 Broken link: fixed updated link is:
 https://docs.kernel.org/mm/slub.html#short-users-guide-for-slub
 
-- PDF pg 509:
-It says: "... In other words, automatically."
+- PDF pg 384:
+Broken link: fixed updated link is:
+https://www.mail-archive.com/git-commits-head@vger.kernel.org/msg18392.html
+(removed the incorrect mailto: prefix)
 
-It should be: "... In other words, atomically."
+- PDF pg 509:
+It says:       "... In other words, automatically."
+It should say: "... In other words, atomically."
 
 
 ### UPDATES / Observations
