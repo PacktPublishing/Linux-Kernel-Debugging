@@ -110,6 +110,11 @@ It should say: "... In other words, atomically."
 
 ### UPDATES / Observations
 
+- PDF pg 43:
+An update to the Ch 01, *Further Reading* section:
+One more good article on the Boeing 737 MAX disaster:
+[The Boeing 737 MAX Saga: Lessons for Software Organizations, PHILLIP JOHNSTON AND ROZI HARRIS, Embedded Artistry, 2019](https://c2y6x2t8.rocketcdn.me/wp-content/uploads/2019/09/the-boeing-737-max-saga-lessons-for-software-organizations.pdf)
+
 - PDF pg 126:
 
 As of now (early 2023), attempting to trace file open's via the `do_sys_open()` doesn't seem to cut it...
