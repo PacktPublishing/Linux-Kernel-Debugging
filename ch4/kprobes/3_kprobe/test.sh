@@ -1,7 +1,15 @@
 #!/bin/bash
 # test.sh
 KMOD=3_kprobe
-FUNC_TO_KPROBE=do_sys_open
+# As pointed out here:
+# https://github.com/PacktPublishing/Linux-Kernel-Debugging#updates--observations
+# As of now (early 2023), attempting to trace file open's via the do_sys_open()
+# doesn't seem to cut it... I find that instead using the do_sys_openat2()
+# works! So, substitute this function in place of the do_sys_open() being used
+# and you may get better results...
+# (In fact, our book's Figure 4.13 shows the do_sys_openat2() being invoked!).
+FUNC_TO_KPROBE=do_sys_openat2
+#FUNC_TO_KPROBE=do_sys_open
 VERBOSE=1
 
 [ $# -ne 1 ] && {
