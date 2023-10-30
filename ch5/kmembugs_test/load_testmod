@@ -8,7 +8,7 @@
 # GitHub repository:
 # https://github.com/PacktPublishing/Linux-Kernel-Debugging
 #
-# From: Ch 7: Debugging kernel memory issues
+# From: Ch 5: Debugging kernel memory issues
 #***************************************************************
 # Simple bash wrapper to setup our custom testcases for KASAN & UBSAN.
 name=$(basename $0)
