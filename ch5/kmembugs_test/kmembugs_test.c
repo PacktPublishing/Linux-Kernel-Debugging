@@ -49,6 +49,8 @@ MODULE_VERSION("0.1");
 
 #ifdef CONFIG_KASAN
 static bool kasan_multishot;
+bool kasan_save_enable_multi_shot(void);
+void kasan_restore_multi_shot(bool enabled);
 #endif
 
 int debugfs_simple_intf_init(void);
