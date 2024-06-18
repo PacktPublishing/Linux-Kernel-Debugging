@@ -109,7 +109,7 @@ It should say: "... In other words, atomically."
 
 - (PDF) pg 585 (as well as other pages):
 We refer to "syzkaller" and "syzbot" as the same thing.
-A reader points out that they aren't the same: "...  syzbot is a higher-level automation on top of syzkaller that runs multiple instances of syzkaller, keeps bug tracking, and provides a webUI... The link https://groups.google.com/g/syzkaller/c/O9rWGc824eU/m/2DKWhBLkCgAJ goes into more details." Thanks to this reader for pointing this out!
+A reader, Javier Carrasco Cruz, points out that they aren't the same: "...  syzbot is a higher-level automation on top of syzkaller that runs multiple instances of syzkaller, keeps bug tracking, and provides a webUI... The link https://groups.google.com/g/syzkaller/c/O9rWGc824eU/m/2DKWhBLkCgAJ goes into more details." Many thanks to you Javier for pointing this out!
 
 
 ### UPDATES / Observations
